@@ -1,0 +1,31 @@
+# Scripts
+*.bash     text eol=lf
+*.fish     text eol=lf
+*.sh       text eol=lf
+# These are explicitly windows files and should use crlf
+*.bat      text eol=crlf
+*.cmd      text eol=crlf
+*.ps1      text eol=crlf
+
+# Serialisation
+*.json     text
+
+# Text files where line endings should be preserved
+*.patch    -text
+
+# Docker
+Dockerfile        text
+
+# Documentation
+*.markdown        text
+*.md              text
+*.txt             text
+LICENSE           text
+*README*          text
+
+#
+# Exclude files from exporting
+#
+
+.gitattributes export-ignore
+.gitignore     export-ignore
