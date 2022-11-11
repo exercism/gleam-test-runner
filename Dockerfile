@@ -1,12 +1,13 @@
 FROM ghcr.io/gleam-lang/gleam:v0.24.0-erlang-alpine
 
-RUN \
   # install packages required to run the tests
-  apk add --no-cache jq coreutils \
-  # Download the used Gleam packages
-  echo get the packages here
-
+RUN apk add --no-cache jq coreutils
 
 WORKDIR /opt/test-runner
 COPY . .
+
+# Download the used Gleam packages eagerly as the test runner will not have
+# network access to do so.
+RUN cd packages && gleam deps download
+
 ENTRYPOINT ["/opt/test-runner/bin/run.sh"]
