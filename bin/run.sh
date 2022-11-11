@@ -23,10 +23,17 @@ fi
 
 set -eu
 
+root_dir=$(dirname "$(dirname "$(realpath "$0")")")
 slug="$1"
 solution_dir=$(realpath "${2%/}")
 output_dir=$(realpath "${3%/}")
 results_file="${output_dir}/results.json"
+
+echo "Copying dependencies..."
+cd packages
+gleam deps download
+mkdir -p "$solution_dir"/build
+cp -r "$root_dir"/packages/build/packages "$solution_dir"/build/packages
 
 sanitise_gleam_output() {
   grep -vE \
@@ -38,6 +45,7 @@ sanitise_gleam_output() {
     -e "^    Running [a-z0-9_]+\.main" \
     -e "^Finished in [0-9]+\.[0-9]+"
 }
+
 
 # Create the output directory if it doesn't exist
 mkdir -p "${output_dir}"
