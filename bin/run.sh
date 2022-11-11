@@ -31,7 +31,6 @@ results_file="${output_dir}/results.json"
 
 echo "Copying dependencies..."
 cd packages
-gleam deps download
 mkdir -p "$solution_dir"/build
 cp -r "$root_dir"/packages/build/packages "$solution_dir"/build/packages
 
