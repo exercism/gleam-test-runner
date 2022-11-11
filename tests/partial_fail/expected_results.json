@@ -1,0 +1,5 @@
+{
+  "version": 1,
+  "status": "fail",
+  "message": "\u001b[0;32m.\u001b[0m\u001b[0;32m.\u001b[0m\u001b[0;31mF\u001b[0m\nFailures:\n\n  1) partial_fail_test:three_test/0\n\u001b[0;31m     Failure: ?assertEqual(<<111,111,112,115>>, Actual)\n       expected: <<\"oops\">>\n            got: <<\"three\">>\u001b[0m\n\u001b[0;36m     %% eunit_proc.erl:346:in `eunit_proc:with_timeout/3`\u001b[0m\n\u001b[0;36m     Output: \u001b[0m\n\u001b[0;36m     Output: \u001b[0m\n\n\u001b[0;31m3 tests, 1 failures\n\u001b[0m"
+}
