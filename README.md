@@ -1,13 +1,7 @@
 # Exercism Test Runner Template
 
-This repository is a [template repository](https://help.github.com/en/github/creating-cloning-and-archiving-repositories/creating-a-template-repository) for creating [test runners][test-runners] for [Exercism][exercism] tracks.
-
 ## Using the Test Runner Template
 
-1. Ensure that your track has not already implemented a test runner. If there is, there will be a `https://github.com/exercism/<track>-test-runner` repository (i.e. if your track's slug is `python`, the test runner repo would be `https://github.com/exercism/python-test-runner`)
-2. Follow [GitHub's documentation](https://help.github.com/en/github/creating-cloning-and-archiving-repositories/creating-a-repository-from-a-template) for creating a repository from a template repository
-   - Name your new repository based on your language track's slug (i.e. if your track is for Python, your test runner repo name is `python-test-runner`)
-3. Remove this [Exercism Test Runner Template](#exercism-test-runner-template) section from the `README.md` file
 4. Build the test runner, conforming to the [Test Runner interface specification](https://github.com/exercism/docs/blob/main/building/tooling/test-runners/interface.md).
    - Update the files to match your track's needs. At the very least, you'll need to update `bin/run.sh`, `Dockerfile` and the test solutions in the `tests` directory
    - Tip: look for `TODO:` comments to point you towards code that need updating
@@ -15,7 +9,7 @@ This repository is a [template repository](https://help.github.com/en/github/cre
 
 Once you're happy with your test runner, [open an issue on the exercism/exercism](https://github.com/exercism/exercism/issues/new?assignees=&labels=&template=new-test-runner.md&title=%5BNew+Test+Runner%5D+) to request an official test runner repository for your track.
 
-# Exercism TRACK_NAME_HERE Test Runner
+# Exercism Gleam Test Runner
 
 The Docker image to automatically run tests on TRACK_NAME_HERE solutions submitted to [Exercism].
 
