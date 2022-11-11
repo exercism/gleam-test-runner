@@ -64,7 +64,6 @@ echo "${slug}: testing..."
 # stderr to capture it
 # Write the results.json file based on the exit code of the command that was 
 # just executed that tested the implementation file
-# TODO: run test here
 if output=$(gleam test 2>&1)
 then
   jq -n '{version: 1, status: "pass"}' > "${results_file}"
