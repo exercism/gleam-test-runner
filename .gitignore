@@ -1,1 +1,8 @@
 tests/*/results.json
+tests/*/*.beam
+tests/*/*.ez
+tests/*/build
+tests/*/erl_crash.dump
+tests/*/.gitignore
+tests/*/.github
+tests/*/README.md

@@ -29,6 +29,21 @@ results_file="${output_dir}/results.json"
 # Create the output directory if it doesn't exist
 mkdir -p "${output_dir}"
 
+# Compile the project
+echo "${slug}: compiling..."
+
+cd "${solution_dir}" || exit 1
+
+# Reset the build directory
+gleam clean
+
+if ! output=$(gleam build 2>&1)
+then
+  jq -n --arg output "${output}" '{version: 1, status: "error", message: $output}' > "${results_file}"
+  echo "Compilation contained error, see ${output_dir}/results.json"
+  exit 0
+fi
+
 echo "${slug}: testing..."
 
 # Run the tests for the provided implementation file and redirect stdout and
@@ -49,7 +64,6 @@ then
   # colorized_test_output=$(echo "${test_output}" \
   #      | GREP_COLOR='01;31' grep --color=always -E -e '^(ERROR:.*|.*failed)$|$' \
   #      | GREP_COLOR='01;32' grep --color=always -E -e '^.*passed$|$')
-
   jq -n --arg output "${test_output}" '{version: 1, status: "fail", message: $output}' > "${results_file}"
 else
   jq -n '{version: 1, status: "pass"}' > "${results_file}"
