@@ -11,6 +11,8 @@
 # Example:
 # ./bin/run-tests.sh
 
+set -eu
+
 exit_code=0
 
 # Iterate over all test directories
@@ -29,20 +31,21 @@ for test_dir in tests/*; do
   echo "${test_dir_name}: testing..."
   bin/run.sh "${test_dir_name}" "${test_dir_path}" "${test_dir_path}" > /dev/null
 
-  # OPTIONAL: Normalize the results file
+  # Normalize the results file
   # If the results.json file contains information that changes between 
   # different test runs (e.g. timing information or paths), you should normalize
   # the results file to allow the diff comparison below to work as expected
-  # sed -i -E \
-  #   -e 's/Elapsed time: [0-9]+\.[0-9]+ seconds//g' \
-  #   -e "s~${test_dir_path}~/solution~g" \
-  #   "${results_file_path}"
+  sed -i -E \
+    -e 's/Compiled in [0-9]+\.[0-9]+/Compiled in 0.0/' \
+    "${results_file_path}"
 
   if diff "${results_file_path}" "${expected_results_file_path}"
   then
     echo "${test_dir_name}: pass"
   else
-    echo "${test_dir_name}: fail"
+    echo
+    echo "${test_dir_name}: fail."
+    echo "${test_dir_name}: ${results_file_path} does not match ${expected_results_file_path}"
     exit_code=1
   fi
   echo

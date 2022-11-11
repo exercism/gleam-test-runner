@@ -21,10 +21,23 @@ if [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ]; then
   exit 1
 fi
 
+set -eu
+
 slug="$1"
 solution_dir=$(realpath "${2%/}")
 output_dir=$(realpath "${3%/}")
 results_file="${output_dir}/results.json"
+
+sanitise_gleam_output() {
+  grep -vE \
+    -e "^Downloading packages" \
+    -e "^ Downloaded [0-9]+ packages in [0-9]\.[0-9]+s" \
+    -e "^ Downloaded [0-9]+ packages in [0-9]\.[0-9]+s" \
+    -e "^  Compiling [a-z0-9_]+$" \
+    -e "^   Compiled in [0-9]+\.[0-9]+s" \
+    -e "^    Running [a-z0-9_]+\.main" \
+    -e "^Finished in [0-9]+\.[0-9]+"
+}
 
 # Create the output directory if it doesn't exist
 mkdir -p "${output_dir}"
@@ -39,6 +52,7 @@ gleam clean
 
 if ! output=$(gleam build 2>&1)
 then
+  output=$(echo "${output}" | sanitise_gleam_output)
   jq -n --arg output "${output}" '{version: 1, status: "error", message: $output}' > "${results_file}"
   echo "Compilation contained error, see ${output_dir}/results.json"
   exit 0
@@ -51,22 +65,12 @@ echo "${slug}: testing..."
 # Write the results.json file based on the exit code of the command that was 
 # just executed that tested the implementation file
 # TODO: run test here
-if test_output=$(gleam test 2>&1)
+if output=$(gleam test 2>&1)
 then
   jq -n '{version: 1, status: "pass"}' > "${results_file}"
 else
-  # OPTIONAL: Sanitize the output
-  # In some cases, the test output might be overly verbose, in which case stripping
-  # the unneeded information can be very helpful to the student
-  # sanitized_test_output=$(printf "${test_output}" | sed -n '/Test results:/,$p')
-
-  # OPTIONAL: Manually add colors to the output to help scanning the output for errors
-  # If the test output does not contain colors to help identify failing (or passing)
-  # tests, it can be helpful to manually add colors to the output
-  # colorized_test_output=$(echo "${test_output}" \
-  #      | GREP_COLOR='01;31' grep --color=always -E -e '^(ERROR:.*|.*failed)$|$' \
-  #      | GREP_COLOR='01;32' grep --color=always -E -e '^.*passed$|$')
-  jq -n --arg output "${test_output}" '{version: 1, status: "fail", message: $output}' > "${results_file}"
+  output=$(echo "${output}" | sanitise_gleam_output)
+  jq -n --arg output "${output}" '{version: 1, status: "fail", message: $output}' > "${results_file}"
 fi
 
 echo "${slug}: done"
