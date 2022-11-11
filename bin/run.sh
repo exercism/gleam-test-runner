@@ -51,8 +51,10 @@ echo "${slug}: testing..."
 # Write the results.json file based on the exit code of the command that was 
 # just executed that tested the implementation file
 # TODO: run test here
-if test_output=$(false)
+if test_output=$(gleam test 2>&1)
 then
+  jq -n '{version: 1, status: "pass"}' > "${results_file}"
+else
   # OPTIONAL: Sanitize the output
   # In some cases, the test output might be overly verbose, in which case stripping
   # the unneeded information can be very helpful to the student
@@ -65,8 +67,6 @@ then
   #      | GREP_COLOR='01;31' grep --color=always -E -e '^(ERROR:.*|.*failed)$|$' \
   #      | GREP_COLOR='01;32' grep --color=always -E -e '^.*passed$|$')
   jq -n --arg output "${test_output}" '{version: 1, status: "fail", message: $output}' > "${results_file}"
-else
-  jq -n '{version: 1, status: "pass"}' > "${results_file}"
 fi
 
 echo "${slug}: done"

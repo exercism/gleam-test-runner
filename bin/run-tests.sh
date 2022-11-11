@@ -26,7 +26,8 @@ for test_dir in tests/*; do
   results_file_path="${test_dir_path}/results.json"
   expected_results_file_path="${test_dir_path}/expected_results.json"
 
-  bin/run.sh "${test_dir_name}" "${test_dir_path}" "${test_dir_path}"
+  echo "${test_dir_name}: testing..."
+  bin/run.sh "${test_dir_name}" "${test_dir_path}" "${test_dir_path}" > /dev/null
 
   # OPTIONAL: Normalize the results file
   # If the results.json file contains information that changes between 
@@ -37,15 +38,16 @@ for test_dir in tests/*; do
   #   -e "s~${test_dir_path}~/solution~g" \
   #   "${results_file_path}"
 
-  echo "${test_dir_name}: comparing results.json to expected_results.json"
-
-  if ! diff "${results_file_path}" "${expected_results_file_path}"
+  if diff "${results_file_path}" "${expected_results_file_path}"
   then
+    echo "${test_dir_name}: pass"
+  else
+    echo "${test_dir_name}: fail"
     exit_code=1
   fi
+  echo
 done
 
-echo
 if [ "${exit_code}" -eq 0 ]
 then
   echo "All tests passed!"
