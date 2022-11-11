@@ -38,7 +38,6 @@ sanitise_gleam_output() {
   grep -vE \
     -e "^Downloading packages" \
     -e "^ Downloaded [0-9]+ packages in [0-9]\.[0-9]+s" \
-    -e "^ Downloaded [0-9]+ packages in [0-9]\.[0-9]+s" \
     -e "^  Compiling [a-z0-9_]+$" \
     -e "^   Compiled in [0-9]+\.[0-9]+s" \
     -e "^    Running [a-z0-9_]+\.main" \
