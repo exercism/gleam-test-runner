@@ -17,12 +17,6 @@ exit_code=0
 
 # Iterate over all test directories
 for test_dir in tests/*; do
-  # TODO: remove
-  # Skip if the test_dir starts with example
-  case "${test_dir}" in
-    tests/example*) continue ;;
-  esac
-
   test_dir_name=$(basename "${test_dir}")
   test_dir_path=$(realpath "${test_dir}")
   results_file_path="${test_dir_path}/results.json"
@@ -30,14 +24,6 @@ for test_dir in tests/*; do
 
   echo "${test_dir_name}: testing..."
   bin/run.sh "${test_dir_name}" "${test_dir_path}" "${test_dir_path}" > /dev/null
-
-  # Normalize the results file
-  # If the results.json file contains information that changes between 
-  # different test runs (e.g. timing information or paths), you should normalize
-  # the results file to allow the diff comparison below to work as expected
-  sed -i -E \
-    -e 's/Compiled in [0-9]+\.[0-9]+/Compiled in 0.0/' \
-    "${results_file_path}"
 
   if diff "${results_file_path}" "${expected_results_file_path}"
   then
