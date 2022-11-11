@@ -1,0 +1,5 @@
+{
+  "version": 1,
+  "status": "error",
+  "message": "Downloading packages\n Downloaded 2 packages in 0.01s\n  Compiling gleam_stdlib\n  Compiling gleeunit\n  Compiling syntax_error\nerror: Syntax error\n  ┌─ ./src/syntax_error.gleam:5:1\n  │\n5 │ }\n  │ ^ I was not expecting this.\n\nExpected one of: \"]\""
+}

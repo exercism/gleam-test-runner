@@ -15,6 +15,12 @@ exit_code=0
 
 # Iterate over all test directories
 for test_dir in tests/*; do
+  # TODO: remove
+  # Skip if the test_dir starts with example
+  case "${test_dir}" in
+    tests/example*) continue ;;
+  esac
+
   test_dir_name=$(basename "${test_dir}")
   test_dir_path=$(realpath "${test_dir}")
   results_file_path="${test_dir_path}/results.json"
@@ -38,5 +44,13 @@ for test_dir in tests/*; do
     exit_code=1
   fi
 done
+
+echo
+if [ "${exit_code}" -eq 0 ]
+then
+  echo "All tests passed!"
+else
+  echo "Some tests failed!"
+fi
 
 exit ${exit_code}
