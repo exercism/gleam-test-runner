@@ -1,6 +1,6 @@
 # Exercism Gleam Test Runner
 
-The Docker image to automatically run tests on TRACK_NAME_HERE solutions submitted to [Exercism].
+The Docker image to automatically run tests on Gleam solutions submitted to [Exercism].
 
 ## Run the test runner
 
