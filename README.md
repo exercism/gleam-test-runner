@@ -26,6 +26,8 @@ Once the test runner has finished, its results will be written to `<output-dir>/
 
 To run the tests to verify the behavior of the test runner, do the following:
 
+1. Ensure you have Gleam, Erlang, and jq installed on your macOS, Linux, or
+   similar machine.
 1. Open a terminal in the project's root
 2. Run `./bin/setup-locally.sh`
 3. Run `./bin/run-tests.sh`
