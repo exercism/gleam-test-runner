@@ -30,9 +30,9 @@ output_dir=$(realpath "${3%/}")
 results_file="${output_dir}/results.json"
 
 echo "Copying dependencies..."
-cd packages
-mkdir -p "$solution_dir"/build
-cp -r "$root_dir"/packages/build/packages "$solution_dir"/build/packages
+mkdir -p "$solution_dir"
+rm -r "$solution_dir"/build
+cp -r "$root_dir"/packages/build "$solution_dir"/build
 
 sanitise_gleam_output() {
   grep -vE \
@@ -44,7 +44,6 @@ sanitise_gleam_output() {
     -e "^Finished in [0-9]+\.[0-9]+"
 }
 
-
 # Create the output directory if it doesn't exist
 mkdir -p "${output_dir}"
 
@@ -52,9 +51,6 @@ mkdir -p "${output_dir}"
 echo "${slug}: compiling..."
 
 cd "${solution_dir}" || exit 1
-
-# Reset the build directory
-gleam clean
 
 if ! output=$(gleam build 2>&1)
 then

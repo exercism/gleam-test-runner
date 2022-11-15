@@ -7,7 +7,8 @@ WORKDIR /opt/test-runner
 COPY . .
 
 # Download the used Gleam packages eagerly as the test runner will not have
-# network access to do so.
-RUN cd packages && gleam deps download
+# network access to do so. They are also pre-compiled for performance when
+# compiling test projects.
+RUN cd packages && gleam build
 
 ENTRYPOINT ["/opt/test-runner/bin/run.sh"]
