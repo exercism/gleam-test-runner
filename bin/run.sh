@@ -31,7 +31,7 @@ results_file="${output_dir}/results.json"
 
 echo "Copying dependencies..."
 mkdir -p "$solution_dir"
-rm -r "$solution_dir"/build
+rm -fr "$solution_dir"/build
 cp -r "$root_dir"/packages/build "$solution_dir"/build
 
 sanitise_gleam_output() {
