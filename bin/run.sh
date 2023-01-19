@@ -25,6 +25,7 @@ set -eu
 
 root_dir=$(dirname "$(dirname "$(realpath "$0")")")
 slug="$1"
+underscore_slug=$(echo "$slug" | tr - _)
 solution_dir=$(realpath "${2%/}")
 output_dir=$(realpath "${3%/}")
 results_file="${output_dir}/results.json"
@@ -41,6 +42,7 @@ rm -fr "$solution_dir"/build
 cp -r "$root_dir"/packages/build "$solution_dir"/build
 cp -r "$root_dir"/packages/gleam.toml "$solution_dir"/gleam.toml
 cp -r "$root_dir"/packages/manifest.toml "$solution_dir"/manifest.toml
+sed -i "" "s/name = \".*\"/name = \"$underscore_slug\"/" "$solution_dir"/gleam.toml 
 
 sanitise_gleam_output() {
   grep -vE \
