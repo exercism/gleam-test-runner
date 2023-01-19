@@ -40,9 +40,8 @@ echo "Copying config and dependencies..."
 mkdir -p "$solution_dir"
 rm -fr "$solution_dir"/build
 cp -r "$root_dir"/packages/build "$solution_dir"/build
-cp -r "$root_dir"/packages/gleam.toml "$solution_dir"/gleam.toml
 cp -r "$root_dir"/packages/manifest.toml "$solution_dir"/manifest.toml
-sed -i "" "s/name = \".*\"/name = \"$underscore_slug\"/" "$solution_dir"/gleam.toml 
+cat "$root_dir"/packages/gleam.toml | sed "s/name = \".*\"/name = \"$underscore_slug\"/" > "$solution_dir"/gleam.toml
 
 sanitise_gleam_output() {
   grep -vE \
