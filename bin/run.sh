@@ -29,10 +29,18 @@ solution_dir=$(realpath "${2%/}")
 output_dir=$(realpath "${3%/}")
 results_file="${output_dir}/results.json"
 
-echo "Copying dependencies..."
+# The container environment does not have network access in order to download
+# dependencies so we copy them from a precompiled Gleam project.
+# The config for this project is also copied to ensure that the build tool does
+# not attempt to download some other version of the dependencies or any
+# additional ones.
+#
+echo "Copying config and dependencies..."
 mkdir -p "$solution_dir"
 rm -fr "$solution_dir"/build
 cp -r "$root_dir"/packages/build "$solution_dir"/build
+cp -r "$root_dir"/packages/gleam.toml "$solution_dir"/gleam.toml
+cp -r "$root_dir"/packages/manifest.toml "$solution_dir"/manifest.toml
 
 sanitise_gleam_output() {
   grep -vE \
