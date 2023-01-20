@@ -29,6 +29,10 @@ underscore_slug=$(echo "$slug" | tr - _)
 solution_dir=$(realpath "${2%/}")
 output_dir=$(realpath "${3%/}")
 results_file="${output_dir}/results.json"
+manifest_file="${solution_dir}/manifest.toml"
+manifest_file_bak="${manifest_file}.bak"
+gleam_file="${solution_dir}/gleam.toml"
+gleam_file_bak="${gleam_file}.bak"
 
 # The container environment does not have network access in order to download
 # dependencies so we copy them from a precompiled Gleam project.
@@ -37,11 +41,15 @@ results_file="${output_dir}/results.json"
 # additional ones.
 #
 echo "Copying config and dependencies..."
-mkdir -p "$solution_dir"
+
+cp "${manifest_file}" "${manifest_file_bak}"
+cp "${gleam_file}" "${gleam_file_bak}"
 rm -fr "$solution_dir"/build
 cp -r "$root_dir"/packages/build "$solution_dir"/build
-cp -r "$root_dir"/packages/manifest.toml "$solution_dir"/manifest.toml
-cat "$root_dir"/packages/gleam.toml | sed "s/name = \".*\"/name = \"$underscore_slug\"/" > "$solution_dir"/gleam.toml
+cp "$root_dir"/packages/manifest.toml "${manifest_file}"
+cat "$root_dir"/packages/gleam.toml | sed "s/name = \".*\"/name = \"$underscore_slug\"/" > "${gleam_file}"
+
+trap "mv ${manifest_file_bak} ${manifest_file} && mv ${gleam_file_bak} ${gleam_file}" EXIT
 
 sanitise_gleam_output() {
   grep -vE \
