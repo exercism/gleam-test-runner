@@ -5,9 +5,17 @@ pub fn main() {
   exercism_test_runner.main()
 }
 
-pub fn hello_world_test() {
-  2
+fn one() {
+  1
+}
+
+pub fn should_equal_test() {
+  1
   |> should.equal(1)
+}
+
+pub fn let_assert_test() {
+  let assert 2 = one()
 }
 
 pub fn extract_function_body_test() {

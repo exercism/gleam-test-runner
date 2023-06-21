@@ -46,7 +46,6 @@ fn run_test(test: Test) -> TestResult {
       None
     }
     Error(error) -> {
-      io.println("error")
       print_error(error)
       Some(error)
     }
@@ -57,8 +56,13 @@ fn run_test(test: Test) -> TestResult {
 fn print_error(error: Error) -> Nil {
   case error {
     Unequal(expected, actual) -> {
+      io.println("left != right")
       io.println("   left: " <> string.inspect(expected))
       io.println("  right: " <> string.inspect(actual))
+    }
+    PatternMatchFailed(value) -> {
+      io.println("Pattern match failed")
+      io.println("  unexpected value: " <> string.inspect(value))
     }
     Crashed(message) -> {
       io.print("  Crashed with error: ")
@@ -69,7 +73,8 @@ fn print_error(error: Error) -> Nil {
 }
 
 pub type Error {
-  Unequal(Dynamic, Dynamic)
+  Unequal(left: Dynamic, right: Dynamic)
+  PatternMatchFailed(value: Dynamic)
   Crashed(String)
 }
 
@@ -136,8 +141,24 @@ fn convert_error(error: erlang.Crash) -> Error {
     erlang.Thrown(error) -> Crashed(string.inspect(error))
     erlang.Errored(error) ->
       decode_unequal_error(error)
+      |> result.or(decode_pattern_match_failed_error(error))
       |> result.unwrap(Crashed(string.inspect(error)))
   }
+}
+
+fn decode_pattern_match_failed_error(
+  error: Dynamic,
+) -> Result(Error, dynamic.DecodeErrors) {
+  let decoder =
+    dynamic.decode2(
+      fn(_, a) { PatternMatchFailed(a) },
+      dynamic.field(
+        atom.create_from_string("message"),
+        decode_tag("Assertion pattern match failed", _),
+      ),
+      dynamic.field(atom.create_from_string("value"), Ok),
+    )
+  decoder(error)
 }
 
 fn decode_unequal_error(error: Dynamic) -> Result(Error, dynamic.DecodeErrors) {
