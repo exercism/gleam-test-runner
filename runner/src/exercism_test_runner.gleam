@@ -1,4 +1,5 @@
 import gleam/io
+import gleam/int
 import gleam/list
 import gleam/bool
 import gleam/result
@@ -31,6 +32,7 @@ pub fn main() {
   let assert Ok(files) = read_directory("test")
   let suites = list.map(files, read_module)
   let _results = list.flat_map(suites, run_suite)
+  io.println("")
   Nil
 }
 
@@ -39,34 +41,40 @@ fn run_suite(suite: Suite) -> List(TestResult) {
 }
 
 fn run_test(test: Test) -> TestResult {
-  io.print(test.name <> ": ")
   let error = case test.function() {
     Ok(_) -> {
-      io.println("ok")
+      io.print(".")
       None
     }
     Error(error) -> {
-      print_error(error)
+      print_error(test, error)
       Some(error)
     }
   }
   TestResult(name: test.name, error: error, output: "")
 }
 
-fn print_error(error: Error) -> Nil {
+fn print_error(test: Test, error: Error) -> Nil {
+  io.println("")
   case error {
     Unequal(expected, actual) -> {
-      io.println("left != right")
+      io.println("   file:  " <> test.module_path)
+      io.println("   test: " <> test.name)
+      io.println("message: left != right")
       io.println("   left: " <> string.inspect(expected))
       io.println("  right: " <> string.inspect(actual))
     }
-    PatternMatchFailed(value) -> {
-      io.println("Pattern match failed")
-      io.println("  unexpected value: " <> string.inspect(value))
+    PatternMatchFailed(value, line) -> {
+      io.println("   file: " <> test.module_path <> ":" <> int.to_string(line))
+      io.println("   test: " <> test.name)
+      io.println("message: Pattern match failed")
+      io.println("  value: " <> string.inspect(value))
     }
-    Crashed(message) -> {
-      io.print("  Crashed with error: ")
-      io.println(message)
+    Crashed(error) -> {
+      io.println("   file: " <> test.module_path)
+      io.println("   test: " <> test.name)
+      io.println("message: Program crashed")
+      io.println("  error: " <> string.inspect(error))
     }
   }
   Nil
@@ -74,8 +82,8 @@ fn print_error(error: Error) -> Nil {
 
 pub type Error {
   Unequal(left: Dynamic, right: Dynamic)
-  PatternMatchFailed(value: Dynamic)
-  Crashed(String)
+  PatternMatchFailed(value: Dynamic, line: Int)
+  Crashed(error: Dynamic)
 }
 
 external fn read_directory(String) -> Result(List(Charlist), Dynamic) =
@@ -98,7 +106,7 @@ fn read_module(filename: Charlist) -> Suite {
   let assert Ok(src) = simplifile.read(path)
   let assert Ok(ast) = glance.module(src)
   let module = get_beam_module(name)
-  let tests = list.filter_map(ast.functions, get_test(src, module, _))
+  let tests = list.filter_map(ast.functions, get_test(src, path, module, _))
   Suite(name: name, path: path, tests: tests)
 }
 
@@ -114,6 +122,7 @@ fn get_beam_module(name: String) -> BeamModule {
 
 fn get_test(
   src: String,
+  module_path: String,
   module: BeamModule,
   function: glance.Definition(glance.Function),
 ) -> Result(Test, Nil) {
@@ -125,7 +134,7 @@ fn get_test(
 
   let src = extract_function_body(src, start, end)
   let function = fn() { run_test_function(module, name) }
-  Ok(Test(name: name, src: src, function: function))
+  Ok(Test(name: name, src: src, module_path: module_path, function: function))
 }
 
 fn run_test_function(module: BeamModule, name: String) -> Result(Nil, Error) {
@@ -137,12 +146,12 @@ fn run_test_function(module: BeamModule, name: String) -> Result(Nil, Error) {
 
 fn convert_error(error: erlang.Crash) -> Error {
   case error {
-    erlang.Exited(error) -> Crashed(string.inspect(error))
-    erlang.Thrown(error) -> Crashed(string.inspect(error))
+    erlang.Exited(error) -> Crashed(error)
+    erlang.Thrown(error) -> Crashed(error)
     erlang.Errored(error) ->
       decode_unequal_error(error)
       |> result.or(decode_pattern_match_failed_error(error))
-      |> result.unwrap(Crashed(string.inspect(error)))
+      |> result.unwrap(Crashed(error))
   }
 }
 
@@ -150,13 +159,14 @@ fn decode_pattern_match_failed_error(
   error: Dynamic,
 ) -> Result(Error, dynamic.DecodeErrors) {
   let decoder =
-    dynamic.decode2(
-      fn(_, a) { PatternMatchFailed(a) },
+    dynamic.decode3(
+      fn(_, value, line) { PatternMatchFailed(value, line) },
       dynamic.field(
         atom.create_from_string("message"),
         decode_tag("Assertion pattern match failed", _),
       ),
       dynamic.field(atom.create_from_string("value"), Ok),
+      dynamic.field(atom.create_from_string("line"), dynamic.int),
     )
   decoder(error)
 }
@@ -185,7 +195,12 @@ type Suite {
 }
 
 type Test {
-  Test(name: String, function: fn() -> Result(Nil, Error), src: String)
+  Test(
+    name: String,
+    module_path: String,
+    function: fn() -> Result(Nil, Error),
+    src: String,
+  )
 }
 
 type TestResult {
