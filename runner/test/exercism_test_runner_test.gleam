@@ -18,6 +18,23 @@ pub fn let_assert_test() {
   let assert 1 = one()
 }
 
+pub fn case_test() {
+  case one() {
+    2 -> Nil
+    _ -> Nil
+  }
+}
+
+pub fn todo_test() {
+  // todo
+  Nil
+}
+
+pub fn panic_test() {
+  // panic
+  Nil
+}
+
 pub fn extract_function_body_test() {
   "
 pub fn main() {
