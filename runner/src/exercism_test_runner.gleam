@@ -32,7 +32,12 @@ pub fn main() {
   let assert Ok(files) = read_directory("test")
   let suites = list.map(files, read_module)
   let results = list.flat_map(suites, run_suite)
-  io.println(print_summary(results))
+  let #(passed, message) = print_summary(results)
+  io.println(message)
+  halt(case passed {
+    True -> 0
+    False -> 1
+  })
 }
 
 fn run_suite(suite: Suite) -> List(TestResult) {
@@ -57,34 +62,74 @@ fn run_test(test: Test) -> TestResult {
 fn print_error(test: Test, error: Error) -> String {
   case error {
     Unequal(expected, actual) -> {
-      string.concat([
-        "   file:  " <> test.module_path,
-        "   test: " <> test.name,
-        "message: left != right",
-        "   left: " <> string.inspect(expected),
-        "  right: " <> string.inspect(actual),
-      ])
+      string.join(
+        [
+          "   file: " <> test.module_path,
+          "   test: " <> test.name,
+          "message: left != right",
+          "   left: " <> string.inspect(expected),
+          "  right: " <> string.inspect(actual),
+        ],
+        "\n",
+      )
     }
-    PatternMatchFailed(value, line) -> {
-      string.concat([
-        "   file: " <> test.module_path <> ":" <> int.to_string(line),
-        "   test: " <> test.name,
-        "message: Pattern match failed",
-        "  value: " <> string.inspect(value),
-      ])
+    Todo(message) -> {
+      string.join(
+        [
+          "   file: " <> test.module_path,
+          "   test: " <> test.name,
+          "message: " <> message,
+        ],
+        "\n",
+      )
+    }
+    Panic(message) -> {
+      string.join(
+        [
+          "   file: " <> test.module_path,
+          "   test: " <> test.name,
+          "message: " <> message,
+        ],
+        "\n",
+      )
+    }
+    Unmatched(value, line) -> {
+      string.join(
+        [
+          "   file: " <> test.module_path <> ":" <> int.to_string(line),
+          "   test: " <> test.name,
+          "message: Pattern match failed",
+          "  value: " <> string.inspect(value),
+        ],
+        "\n",
+      )
+    }
+    UnmatchedCase(value) -> {
+      string.join(
+        [
+          "   file: " <> test.module_path,
+          "   test: " <> test.name,
+          "message: Pattern match failed",
+          "  value: " <> string.inspect(value),
+        ],
+        "\n",
+      )
     }
     Crashed(error) -> {
-      string.concat([
-        "   file: " <> test.module_path,
-        "   test: " <> test.name,
-        "message: Program crashed",
-        "  error: " <> string.inspect(error),
-      ])
+      string.join(
+        [
+          "   file: " <> test.module_path,
+          "   test: " <> test.name,
+          "message: Program crashed",
+          "  error: " <> string.inspect(error),
+        ],
+        "\n",
+      )
     }
   }
 }
 
-fn print_summary(results: List(TestResult)) -> String {
+fn print_summary(results: List(TestResult)) -> #(Bool, String) {
   let total =
     results
     |> list.length
@@ -94,12 +139,16 @@ fn print_summary(results: List(TestResult)) -> String {
     |> list.filter(fn(result) { result.error != None })
     |> list.length
     |> int.to_string
-  "\nRan " <> total <> " tests, " <> failed <> " failures"
+  let message = "\nRan " <> total <> " tests, " <> failed <> " failures"
+  #(failed == "0", message)
 }
 
 pub type Error {
   Unequal(left: Dynamic, right: Dynamic)
-  PatternMatchFailed(value: Dynamic, line: Int)
+  Todo(message: String)
+  Panic(message: String)
+  Unmatched(value: Dynamic, line: Int)
+  UnmatchedCase(value: Dynamic)
   Crashed(error: Dynamic)
 }
 
@@ -165,10 +214,18 @@ fn convert_error(error: erlang.Crash) -> Error {
   case error {
     erlang.Exited(error) -> Crashed(error)
     erlang.Thrown(error) -> Crashed(error)
-    erlang.Errored(error) ->
-      decode_unequal_error(error)
-      |> result.or(decode_pattern_match_failed_error(error))
+    erlang.Errored(error) -> {
+      let decoders = [
+        decode_unequal_error,
+        decode_pattern_match_failed_error,
+        decode_case_clause_error,
+        decode_todo_error,
+        decode_panic_error,
+      ]
+      error
+      |> dynamic.any(decoders)
       |> result.unwrap(Crashed(error))
+    }
   }
 }
 
@@ -177,13 +234,51 @@ fn decode_pattern_match_failed_error(
 ) -> Result(Error, dynamic.DecodeErrors) {
   let decoder =
     dynamic.decode3(
-      fn(_, value, line) { PatternMatchFailed(value, line) },
+      fn(_, value, line) { Unmatched(value, line) },
       dynamic.field(
-        atom.create_from_string("message"),
+        atom.create_from_string("gleam_error"),
         decode_tag("Assertion pattern match failed", _),
       ),
       dynamic.field(atom.create_from_string("value"), Ok),
       dynamic.field(atom.create_from_string("line"), dynamic.int),
+    )
+  decoder(error)
+}
+
+fn decode_todo_error(error: Dynamic) -> Result(Error, dynamic.DecodeErrors) {
+  let decoder =
+    dynamic.decode2(
+      fn(_, message) { Todo(message) },
+      dynamic.field(
+        atom.create_from_string("gleam_error"),
+        decode_tag(atom.create_from_string("todo"), _),
+      ),
+      dynamic.field(atom.create_from_string("message"), dynamic.string),
+    )
+  decoder(error)
+}
+
+fn decode_panic_error(error: Dynamic) -> Result(Error, dynamic.DecodeErrors) {
+  let decoder =
+    dynamic.decode2(
+      fn(_, message) { Panic(message) },
+      dynamic.field(
+        atom.create_from_string("gleam_error"),
+        decode_tag(atom.create_from_string("panic"), _),
+      ),
+      dynamic.field(atom.create_from_string("message"), dynamic.string),
+    )
+  decoder(error)
+}
+
+fn decode_case_clause_error(
+  error: Dynamic,
+) -> Result(Error, dynamic.DecodeErrors) {
+  let decoder =
+    dynamic.decode2(
+      fn(_, value) { UnmatchedCase(value) },
+      dynamic.element(0, decode_tag(atom.create_from_string("case_clause"), _)),
+      dynamic.element(1, Ok),
     )
   decoder(error)
 }
@@ -253,3 +348,6 @@ fn undent(line: String) -> String {
     False -> line
   }
 }
+
+external fn halt(Int) -> a =
+  "erlang" "halt"
