@@ -1,3 +1,8 @@
+// TODO: Get and show stacktrace
+// TODO: Collect output.
+// - https://github.com/JohnBjrk/showtime/blob/e09519075a66fce96ae1a75e91d696dae5cff652/src/showtime_ffi.erl#LL5C1-L38C9
+// TODO: Write results json file
+// TODO: Tests for formatting, test running, etc
 import gleam/io
 import gleam/int
 import gleam/list
