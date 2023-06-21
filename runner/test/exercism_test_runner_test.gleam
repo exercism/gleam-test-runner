@@ -15,7 +15,7 @@ pub fn should_equal_test() {
 }
 
 pub fn let_assert_test() {
-  let assert 2 = one()
+  let assert 1 = one()
 }
 
 pub fn extract_function_body_test() {
