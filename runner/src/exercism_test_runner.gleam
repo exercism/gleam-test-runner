@@ -3,34 +3,69 @@ import gleam/list
 import gleam/bool
 import gleam/result
 import gleam/string
+import gleam/option.{None, Option, Some}
 import gleam/bit_string
 import gleam/dynamic.{Dynamic}
+import gleam/erlang
 import gleam/erlang/atom.{Atom}
 import gleam/erlang/charlist.{Charlist}
 import simplifile
 import glance
 
+// {
+//   "version": 2,
+//   "status": "pass" | "fail" | "error",
+//   "message": "required if status is error",
+//   "tests": [
+//     {
+//       "name": "test name",
+//       "test_code": "assert 1 == 1",
+//       "status": "pass" | "fail" | "error",
+//       "message": "required if status is error or fail",
+//       "output": "output printed by the user",
+//     }
+//   ]
+// }
+
 pub fn main() {
   let assert Ok(files) = read_directory("test")
   let suites = list.map(files, read_module)
-  list.map(suites, run_suite)
-}
-
-fn run_suite(suite: Suite) -> Nil {
-  list.map(suite.tests, run_test)
+  let _results = list.flat_map(suites, run_suite)
   Nil
 }
 
-fn run_test(test: Test) -> Nil {
+fn run_suite(suite: Suite) -> List(TestResult) {
+  list.map(suite.tests, run_test)
+}
+
+fn run_test(test: Test) -> TestResult {
   io.print(test.name <> ": ")
-  case test.function() {
-    Ok(_) -> io.println("ok")
+  let error = case test.function() {
+    Ok(_) -> {
+      io.println("ok")
+      None
+    }
     Error(error) -> {
-      io.print("\n\t")
-      io.debug(error)
-      Nil
+      io.println("error")
+      print_error(error)
+      Some(error)
     }
   }
+  TestResult(name: test.name, error: error, output: "")
+}
+
+fn print_error(error: Error) -> Nil {
+  case error {
+    Unequal(expected, actual) -> {
+      io.println("   left: " <> string.inspect(expected))
+      io.println("  right: " <> string.inspect(actual))
+    }
+    Crashed(message) -> {
+      io.print("  Crashed with error: ")
+      io.println(message)
+    }
+  }
+  Nil
 }
 
 pub type Error {
@@ -84,11 +119,44 @@ fn get_test(
   use <- bool.guard(!string.ends_with(name, "_test"), Error(Nil))
 
   let src = extract_function_body(src, start, end)
-  let function = fn() {
-    apply(module, atom.create_from_string(name), [])
-    Ok(Nil)
-  }
+  let function = fn() { run_test_function(module, name) }
   Ok(Test(name: name, src: src, function: function))
+}
+
+fn run_test_function(module: BeamModule, name: String) -> Result(Nil, Error) {
+  fn() { apply(module, atom.create_from_string(name), []) }
+  |> erlang.rescue
+  |> result.map_error(convert_error)
+  |> result.replace(Nil)
+}
+
+fn convert_error(error: erlang.Crash) -> Error {
+  case error {
+    erlang.Exited(error) -> Crashed(string.inspect(error))
+    erlang.Thrown(error) -> Crashed(string.inspect(error))
+    erlang.Errored(error) ->
+      decode_unequal_error(error)
+      |> result.unwrap(Crashed(string.inspect(error)))
+  }
+}
+
+fn decode_unequal_error(error: Dynamic) -> Result(Error, dynamic.DecodeErrors) {
+  let tag = atom.create_from_string("unequal")
+  let decoder =
+    dynamic.decode3(
+      fn(_, a, b) { Unequal(a, b) },
+      dynamic.element(0, decode_tag(tag, _)),
+      dynamic.element(1, Ok),
+      dynamic.element(2, Ok),
+    )
+  decoder(error)
+}
+
+fn decode_tag(tag: anything, data: Dynamic) -> Result(Nil, dynamic.DecodeErrors) {
+  case dynamic.from(tag) == data {
+    True -> Ok(Nil)
+    False -> Error([dynamic.DecodeError("Tag", dynamic.classify(data), [])])
+  }
 }
 
 type Suite {
@@ -97,6 +165,10 @@ type Suite {
 
 type Test {
   Test(name: String, function: fn() -> Result(Nil, Error), src: String)
+}
+
+type TestResult {
+  TestResult(name: String, error: Option(Error), output: String)
 }
 
 pub fn extract_function_body(src: String, start: Int, end: Int) -> String {
