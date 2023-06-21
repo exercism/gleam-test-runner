@@ -31,9 +31,8 @@ import glance
 pub fn main() {
   let assert Ok(files) = read_directory("test")
   let suites = list.map(files, read_module)
-  let _results = list.flat_map(suites, run_suite)
-  io.println("")
-  Nil
+  let results = list.flat_map(suites, run_suite)
+  io.println(print_summary(results))
 }
 
 fn run_suite(suite: Suite) -> List(TestResult) {
@@ -47,37 +46,55 @@ fn run_test(test: Test) -> TestResult {
       None
     }
     Error(error) -> {
-      print_error(test, error)
+      io.println("F")
+      io.println(print_error(test, error))
       Some(error)
     }
   }
   TestResult(name: test.name, error: error, output: "")
 }
 
-fn print_error(test: Test, error: Error) -> Nil {
-  io.println("")
+fn print_error(test: Test, error: Error) -> String {
   case error {
     Unequal(expected, actual) -> {
-      io.println("   file:  " <> test.module_path)
-      io.println("   test: " <> test.name)
-      io.println("message: left != right")
-      io.println("   left: " <> string.inspect(expected))
-      io.println("  right: " <> string.inspect(actual))
+      string.concat([
+        "   file:  " <> test.module_path,
+        "   test: " <> test.name,
+        "message: left != right",
+        "   left: " <> string.inspect(expected),
+        "  right: " <> string.inspect(actual),
+      ])
     }
     PatternMatchFailed(value, line) -> {
-      io.println("   file: " <> test.module_path <> ":" <> int.to_string(line))
-      io.println("   test: " <> test.name)
-      io.println("message: Pattern match failed")
-      io.println("  value: " <> string.inspect(value))
+      string.concat([
+        "   file: " <> test.module_path <> ":" <> int.to_string(line),
+        "   test: " <> test.name,
+        "message: Pattern match failed",
+        "  value: " <> string.inspect(value),
+      ])
     }
     Crashed(error) -> {
-      io.println("   file: " <> test.module_path)
-      io.println("   test: " <> test.name)
-      io.println("message: Program crashed")
-      io.println("  error: " <> string.inspect(error))
+      string.concat([
+        "   file: " <> test.module_path,
+        "   test: " <> test.name,
+        "message: Program crashed",
+        "  error: " <> string.inspect(error),
+      ])
     }
   }
-  Nil
+}
+
+fn print_summary(results: List(TestResult)) -> String {
+  let total =
+    results
+    |> list.length
+    |> int.to_string
+  let failed =
+    results
+    |> list.filter(fn(result) { result.error != None })
+    |> list.length
+    |> int.to_string
+  "\nRan " <> total <> " tests, " <> failed <> " failures"
 }
 
 pub type Error {
