@@ -1,3 +1,4 @@
+import gleam/json
 import gleam/dynamic
 import gleam/option.{None, Some}
 import exercism/test_runner
@@ -135,36 +136,166 @@ pub fn print_unmatched_case_test() {
 }
 
 pub fn print_summary_passed_test() {
+  let test =
+    internal.Test(
+      module_path: "src/wibble.gleam",
+      name: "one_test",
+      function: fn() { Ok(Nil) },
+      src: "",
+    )
   [
-    internal.TestResult("a_test", None, ""),
-    internal.TestResult("b_test", None, ""),
-    internal.TestResult("c_test", None, ""),
+    internal.TestResult(test, None, ""),
+    internal.TestResult(test, None, ""),
+    internal.TestResult(test, None, ""),
   ]
   |> internal.print_summary
   |> should.equal(#(True, "Ran 3 tests, 0 failed"))
 }
 
 pub fn print_summary_failed_test() {
+  let test =
+    internal.Test(
+      module_path: "src/wibble.gleam",
+      name: "one_test",
+      function: fn() { Ok(Nil) },
+      src: "",
+    )
   [
-    internal.TestResult("a_test", Some(internal.Todo("")), ""),
-    internal.TestResult("b_test", None, ""),
-    internal.TestResult("c_test", None, ""),
+    internal.TestResult(test, Some(internal.Todo("")), ""),
+    internal.TestResult(test, None, ""),
+    internal.TestResult(test, None, ""),
   ]
   |> internal.print_summary
   |> should.equal(#(False, "Ran 3 tests, 1 failed"))
 }
 
 pub fn run_test_test() {
-  internal.Test(
-    module_path: "src/wibble.gleam",
-    name: "one_test",
-    function: fn() {
-      test_runner.debug([1, 2])
-      test_runner.debug(Ok(Nil))
-      Ok(Nil)
-    },
-    src: "",
-  )
+  let test =
+    internal.Test(
+      module_path: "src/wibble.gleam",
+      name: "one_test",
+      function: fn() {
+        test_runner.debug([1, 2])
+        test_runner.debug(Ok(Nil))
+        Ok(Nil)
+      },
+      src: "",
+    )
+  test
   |> internal.run_test
-  |> should.equal(internal.TestResult("one_test", None, "[1, 2]\nOk(Nil)\n"))
+  |> should.equal(internal.TestResult(test, None, "[1, 2]\nOk(Nil)\n"))
 }
+
+pub fn results_to_json_pass_test() {
+  [
+    internal.TestResult(
+      internal.Test(
+        module_path: "src/wibble.gleam",
+        name: "one_test",
+        function: fn() { Ok(Nil) },
+        src: "src1",
+      ),
+      None,
+      "One two three!",
+    ),
+    internal.TestResult(
+      internal.Test(
+        module_path: "src/wibble.gleam",
+        name: "two_test",
+        function: fn() { Ok(Nil) },
+        src: "src2",
+      ),
+      None,
+      "",
+    ),
+  ]
+  |> internal.results_to_json
+  |> should.equal(json.to_string(json.object([
+    #("version", json.int(2)),
+    #("status", json.string("pass")),
+    #(
+      "tests",
+      json.preprocessed_array([
+        json.object([
+          #("name", json.string("one_test")),
+          #("test_code", json.string("src1")),
+          #("output", json.string("One two three!")),
+          #("status", json.string("pass")),
+        ]),
+        json.object([
+          #("name", json.string("two_test")),
+          #("test_code", json.string("src2")),
+          #("status", json.string("pass")),
+        ]),
+      ]),
+    ),
+  ])))
+}
+
+pub fn results_to_json_failed_test() {
+  [
+    internal.TestResult(
+      internal.Test(
+        module_path: "src/wibble.gleam",
+        name: "one_test",
+        function: fn() { Ok(Nil) },
+        src: "src1",
+      ),
+      Some(internal.Todo("todo")),
+      "One two three!",
+    ),
+    internal.TestResult(
+      internal.Test(
+        module_path: "src/wibble.gleam",
+        name: "two_test",
+        function: fn() { Ok(Nil) },
+        src: "src2",
+      ),
+      None,
+      "",
+    ),
+  ]
+  |> internal.results_to_json
+  |> should.equal(json.to_string(json.object([
+    #("version", json.int(2)),
+    #("status", json.string("fail")),
+    #(
+      "tests",
+      json.preprocessed_array([
+        json.object([
+          #("name", json.string("one_test")),
+          #("test_code", json.string("src1")),
+          #("output", json.string("One two three!")),
+          #("status", json.string("fail")),
+          #(
+            "message",
+            json.string(internal.print_error(
+              internal.Todo("todo"),
+              "src/wibble.gleam",
+              "one_test",
+            )),
+          ),
+        ]),
+        json.object([
+          #("name", json.string("two_test")),
+          #("test_code", json.string("src2")),
+          #("status", json.string("pass")),
+        ]),
+      ]),
+    ),
+  ])))
+}
+// {
+//   "version": 2,
+//   "status": "pass" | "fail" | "error",
+//   "message": "required if status is error",
+//   "tests": [
+//     {
+//       "name": "test name",
+//       "test_code": "assert 1 == 1",
+//       "status": "pass" | "fail" | "error",
+//       "message": "required if status is error or fail",
+//       "output": "output printed by the user", TODO: truncated to 500 characters
+//     }
+//   ]
+// }

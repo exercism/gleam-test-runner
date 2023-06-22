@@ -1,5 +1,6 @@
 import gap
 import gleam/int
+import gleam/json.{Json}
 import gleam/list
 import gleam/result
 import gleam/string
@@ -32,7 +33,7 @@ pub type Test {
 }
 
 pub type TestResult {
-  TestResult(name: String, error: Option(Error), output: String)
+  TestResult(test: Test, error: Option(Error), output: String)
 }
 
 pub fn extract_function_body(src: String, start: Int, end: Int) -> String {
@@ -296,5 +297,39 @@ pub fn run_test(test: Test) -> TestResult {
     Ok(_) -> None
     Error(error) -> Some(error)
   }
-  TestResult(name: test.name, error: error, output: get_output())
+  TestResult(test: test, error: error, output: get_output())
+}
+
+pub fn results_to_json(results: List(TestResult)) -> String {
+  let failed = list.any(results, fn(test) { test.error != None })
+  let status = case failed {
+    True -> "fail"
+    False -> "pass"
+  }
+  json.object([
+    #("version", json.int(2)),
+    #("status", json.string(status)),
+    #("tests", json.array(results, test_result_json)),
+  ])
+  |> json.to_string
+}
+
+fn test_result_json(result: TestResult) -> Json {
+  let fields = case result.error {
+    Some(error) -> {
+      let error = print_error(error, result.test.module_path, result.test.name)
+      [#("status", json.string("fail")), #("message", json.string(error))]
+    }
+    None -> [#("status", json.string("pass"))]
+  }
+  let fields = case result.output {
+    "" -> fields
+    output -> [#("output", json.string(output)), ..fields]
+  }
+  let fields = [
+    #("name", json.string(result.test.name)),
+    #("test_code", json.string(result.test.src)),
+    ..fields
+  ]
+  json.object(fields)
 }
