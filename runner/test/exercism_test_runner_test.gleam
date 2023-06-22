@@ -1,4 +1,5 @@
 import gleam/json
+import gleam/string
 import gleam/dynamic
 import gleam/option.{None, Some}
 import exercism/test_runner
@@ -285,17 +286,40 @@ pub fn results_to_json_failed_test() {
     ),
   ])))
 }
-// {
-//   "version": 2,
-//   "status": "pass" | "fail" | "error",
-//   "message": "required if status is error",
-//   "tests": [
-//     {
-//       "name": "test name",
-//       "test_code": "assert 1 == 1",
-//       "status": "pass" | "fail" | "error",
-//       "message": "required if status is error or fail",
-//       "output": "output printed by the user", TODO: truncated to 500 characters
-//     }
-//   ]
-// }
+
+pub fn results_to_json_long_output_test() {
+  let output = string.repeat("a", 1000)
+  let expected =
+    string.repeat("a", 448) <> "...
+
+Output was truncated. Please limit to 500 chars"
+
+  [
+    internal.TestResult(
+      internal.Test(
+        module_path: "src/wibble.gleam",
+        name: "one_test",
+        function: fn() { Ok(Nil) },
+        src: "src1",
+      ),
+      None,
+      output,
+    ),
+  ]
+  |> internal.results_to_json
+  |> should.equal(json.to_string(json.object([
+    #("version", json.int(2)),
+    #("status", json.string("pass")),
+    #(
+      "tests",
+      json.preprocessed_array([
+        json.object([
+          #("name", json.string("one_test")),
+          #("test_code", json.string("src1")),
+          #("output", json.string(expected)),
+          #("status", json.string("pass")),
+        ]),
+      ]),
+    ),
+  ])))
+}

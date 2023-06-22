@@ -322,7 +322,7 @@ fn test_result_json(result: TestResult) -> Json {
     }
     None -> [#("status", json.string("pass"))]
   }
-  let fields = case result.output {
+  let fields = case truncate(result.output) {
     "" -> fields
     output -> [#("output", json.string(output)), ..fields]
   }
@@ -332,4 +332,15 @@ fn test_result_json(result: TestResult) -> Json {
     ..fields
   ]
   json.object(fields)
+}
+
+fn truncate(output: String) -> String {
+  case string.length(output) > 500 {
+    True ->
+      output
+      |> string.slice(0, 448)
+      |> string.append("...\n\n")
+      |> string.append("Output was truncated. Please limit to 500 chars")
+    False -> output
+  }
 }
