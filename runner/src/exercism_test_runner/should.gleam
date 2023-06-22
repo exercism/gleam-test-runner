@@ -1,4 +1,4 @@
-import exercism_test_runner.{Error, Unequal}
+import exercism_test_runner/internal.{Error, Unequal}
 import gleam/dynamic
 
 external fn raise(Error) -> a =

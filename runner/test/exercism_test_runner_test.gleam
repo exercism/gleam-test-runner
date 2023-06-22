@@ -1,5 +1,6 @@
 import exercism_test_runner
 import exercism_test_runner/should
+import exercism_test_runner/internal
 
 pub fn main() {
   exercism_test_runner.main()
@@ -10,8 +11,8 @@ fn one() {
 }
 
 pub fn should_equal_test() {
-  1
-  |> should.equal(1)
+  "one 1"
+  |> should.equal("one 2")
 }
 
 pub fn let_assert_test() {
@@ -54,7 +55,7 @@ pub fn flip(f) {
   }
 }
 "
-  |> exercism_test_runner.extract_function_body(50, 143)
+  |> internal.extract_function_body(50, 143)
   |> should.equal(
     "case result {
   Ok(value) -> value
