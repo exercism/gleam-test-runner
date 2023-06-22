@@ -16,9 +16,9 @@ packages = [
 ]
 
 [requirements]
-gap = { version = "~> 0.4" }
-glance = { version = "~> 0.5" }
-gleam_erlang = { version = "~> 0.19" }
-gleam_json = { version = "~> 0.5" }
-gleam_stdlib = { version = "~> 0.29" }
-simplifile = { version = "~> 0.1" }
+gap = "~> 0.4"
+glance = "~> 0.5"
+gleam_erlang = "~> 0.19"
+gleam_json = "~> 0.5"
+gleam_stdlib = "~> 0.29"
+simplifile = "~> 0.1"
