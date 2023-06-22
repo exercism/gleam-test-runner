@@ -102,7 +102,7 @@ fn get_test(
   Ok(Test(name: name, src: src, module_path: module_path, function: function))
 }
 
-pub type BeamModule
+pub external type BeamModule
 
 /// This function is unsafe. It does not verify that the atom is a BEAM module
 /// currently loaded by the VM, or that the function exists. Don't mess up!
