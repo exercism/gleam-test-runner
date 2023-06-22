@@ -11,5 +11,6 @@ gleam_erlang = "~> 0.19"
 gleam_stdlib = "~> 0.29"
 simplifile = "~> 0.1"
 thoas = "~> 1.0"
+gap = "~> 0.4"
 
 [dev-dependencies]
