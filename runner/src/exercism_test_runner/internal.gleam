@@ -3,11 +3,11 @@ import gleam/int
 import gleam/list
 import gleam/result
 import gleam/string
-import gleam/option.{None, Option}
+import gleam/option.{None, Option, Some}
 import gleam/bit_string
 import gleam/dynamic.{Dynamic}
 import gleam/erlang
-import gleam/erlang/atom.{Atom}
+import gleam/erlang/atom
 
 pub type Error {
   Unequal(left: Dynamic, right: Dynamic)
@@ -34,8 +34,6 @@ pub type Test {
 pub type TestResult {
   TestResult(name: String, error: Option(Error), output: String)
 }
-
-pub type BeamModule
 
 pub fn extract_function_body(src: String, start: Int, end: Int) -> String {
   src
@@ -67,7 +65,7 @@ fn undent(line: String) -> String {
   }
 }
 
-pub fn print_error(test: Test, error: Error) -> String {
+pub fn print_error(error: Error, path: String, test_name: String) -> String {
   case error {
     Unequal(left, right) -> {
       let diff =
@@ -75,8 +73,8 @@ pub fn print_error(test: Test, error: Error) -> String {
         |> gap.to_styled
       string.join(
         [
-          test.module_path,
-          "   test: " <> test.name,
+          path,
+          "   test: " <> test_name,
           "  error: left != right",
           "   left: " <> diff.first,
           "  right: " <> diff.second,
@@ -86,21 +84,31 @@ pub fn print_error(test: Test, error: Error) -> String {
     }
     Todo(message) -> {
       string.join(
-        [test.module_path, "   test: " <> test.name, "  error: " <> message],
+        [
+          path,
+          "   test: " <> test_name,
+          "  error: todo",
+          "   info: " <> message,
+        ],
         "\n",
       )
     }
     Panic(message) -> {
       string.join(
-        [test.module_path, "   test: " <> test.name, "  error: " <> message],
+        [
+          path,
+          "   test: " <> test_name,
+          "  error: panic",
+          "   info: " <> message,
+        ],
         "\n",
       )
     }
     Unmatched(value, line) -> {
       string.join(
         [
-          test.module_path <> ":" <> int.to_string(line),
-          "   test: " <> test.name,
+          path <> ":" <> int.to_string(line),
+          "   test: " <> test_name,
           "  error: Pattern match failed",
           "  value: " <> string.inspect(value),
         ],
@@ -110,8 +118,8 @@ pub fn print_error(test: Test, error: Error) -> String {
     UnmatchedCase(value) -> {
       string.join(
         [
-          test.module_path,
-          "   test: " <> test.name,
+          path,
+          "   test: " <> test_name,
           "  error: Pattern match failed",
           "  value: " <> string.inspect(value),
         ],
@@ -121,10 +129,10 @@ pub fn print_error(test: Test, error: Error) -> String {
     Crashed(error) -> {
       string.join(
         [
-          test.module_path,
-          "   test: " <> test.name,
+          path,
+          "   test: " <> test_name,
           "  error: Program crashed",
-          "         " <> string.inspect(error),
+          "  cause: " <> string.inspect(error),
         ],
         "\n",
       )
@@ -142,17 +150,12 @@ pub fn print_summary(results: List(TestResult)) -> #(Bool, String) {
     |> list.filter(fn(result) { result.error != None })
     |> list.length
     |> int.to_string
-  let message = "\nRan " <> total <> " tests, " <> failed <> " failures"
+  let message = "Ran " <> total <> " tests, " <> failed <> " failed"
   #(failed == "0", message)
 }
 
-/// This function is unsafe. It does not verify that the atom is a BEAM module
-/// currently loaded by the VM, or that the function exists. Don't mess up!
-external fn apply(BeamModule, Atom, List(Dynamic)) -> Dynamic =
-  "erlang" "apply"
-
-pub fn run_test_function(module: BeamModule, name: String) -> Result(Nil, Error) {
-  fn() { apply(module, atom.create_from_string(name), []) }
+pub fn run_test_function(function: fn() -> a) -> Result(Nil, Error) {
+  function
   |> erlang.rescue
   |> result.map_error(convert_error)
   |> result.replace(Nil)
@@ -248,4 +251,50 @@ fn decode_tag(tag: anything, data: Dynamic) -> Result(Nil, dynamic.DecodeErrors)
     True -> Ok(Nil)
     False -> Error([dynamic.DecodeError("Tag", dynamic.classify(data), [])])
   }
+}
+
+pub type ProcessDictionaryKey {
+  ExecismTestRunnerUserOutput
+}
+
+external fn process_dictionary_set(ProcessDictionaryKey, String) -> Dynamic =
+  "erlang" "put"
+
+external fn process_dictionary_get(ProcessDictionaryKey) -> Dynamic =
+  "erlang" "get"
+
+/// Append a string to the output store in the process dictionary.
+/// In future it may be preferable to use a global actor or similar so we can
+/// merge in any writing to stdout. Writing to stderr is not possible to
+/// capture.
+pub fn append_output(value: String) -> Nil {
+  ExecismTestRunnerUserOutput
+  |> process_dictionary_get
+  |> dynamic.string()
+  |> result.unwrap("")
+  |> string.append(value)
+  |> string.append("\n")
+  |> process_dictionary_set(ExecismTestRunnerUserOutput, _)
+  Nil
+}
+
+pub fn clear_output() -> Nil {
+  process_dictionary_set(ExecismTestRunnerUserOutput, "")
+  Nil
+}
+
+pub fn get_output() -> String {
+  ExecismTestRunnerUserOutput
+  |> process_dictionary_get
+  |> dynamic.string()
+  |> result.unwrap("")
+}
+
+pub fn run_test(test: Test) -> TestResult {
+  clear_output()
+  let error = case test.function() {
+    Ok(_) -> None
+    Error(error) -> Some(error)
+  }
+  TestResult(name: test.name, error: error, output: get_output())
 }

@@ -1,7 +1,5 @@
 // TODO: Get and show stacktrace
-// TODO: Provide debug printing function that collects output.
 // TODO: Write results json file
-// TODO: Tests for formatting, test running, etc
 import gleam/io
 import gleam/list
 import gleam/bool
@@ -12,8 +10,7 @@ import gleam/erlang/atom.{Atom}
 import gleam/erlang/charlist.{Charlist}
 import simplifile
 import glance
-import exercism_test_runner/internal.{BeamModule,
-  Error, Suite, Test, TestResult}
+import exercism_test_runner/internal.{Error, Suite, Test, TestResult}
 
 // {
 //   "version": 2,
@@ -35,11 +32,16 @@ pub fn main() {
   let suites = list.map(files, read_module)
   let results = list.flat_map(suites, run_suite)
   let #(passed, message) = internal.print_summary(results)
-  io.println(message)
+  io.println("\n" <> message)
   halt(case passed {
     True -> 0
     False -> 1
   })
+}
+
+pub fn debug(value: anything) -> anything {
+  internal.append_output(string.inspect(value))
+  value
 }
 
 fn run_suite(suite: Suite) -> List(TestResult) {
@@ -47,18 +49,15 @@ fn run_suite(suite: Suite) -> List(TestResult) {
 }
 
 fn run_test(test: Test) -> TestResult {
-  let error = case test.function() {
-    Ok(_) -> {
-      io.print(".")
-      None
-    }
-    Error(error) -> {
+  let result = internal.run_test(test)
+  case result.error {
+    None -> io.print(".")
+    Some(error) -> {
       io.println("F")
-      io.println(internal.print_error(test, error))
-      Some(error)
+      io.println(internal.print_error(error, test.module_path, test.name))
     }
   }
-  TestResult(name: test.name, error: error, output: "")
+  result
 }
 
 external fn read_directory(String) -> Result(List(Charlist), Dynamic) =
@@ -101,9 +100,20 @@ fn get_test(
   use <- bool.guard(!string.ends_with(name, "_test"), Error(Nil))
 
   let src = internal.extract_function_body(src, start, end)
-  let function = fn() { internal.run_test_function(module, name) }
+  let function = fn() {
+    internal.run_test_function(fn() {
+      apply(module, atom.create_from_string(name), [])
+    })
+  }
   Ok(Test(name: name, src: src, module_path: module_path, function: function))
 }
+
+pub type BeamModule
+
+/// This function is unsafe. It does not verify that the atom is a BEAM module
+/// currently loaded by the VM, or that the function exists. Don't mess up!
+external fn apply(BeamModule, Atom, List(Dynamic)) -> Dynamic =
+  "erlang" "apply"
 
 external fn halt(Int) -> a =
   "erlang" "halt"
