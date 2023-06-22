@@ -12,21 +12,6 @@ import simplifile
 import glance
 import exercism_test_runner/internal.{Error, Suite, Test, TestResult}
 
-// {
-//   "version": 2,
-//   "status": "pass" | "fail" | "error",
-//   "message": "required if status is error",
-//   "tests": [
-//     {
-//       "name": "test name",
-//       "test_code": "assert 1 == 1",
-//       "status": "pass" | "fail" | "error",
-//       "message": "required if status is error or fail",
-//       "output": "output printed by the user",
-//     }
-//   ]
-// }
-
 pub fn main() {
   let assert Ok(files) = read_directory("test")
   let suites = list.map(files, read_module)
