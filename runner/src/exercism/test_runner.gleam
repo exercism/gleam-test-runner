@@ -1,11 +1,11 @@
 // TODO: Get and show stacktrace
-// TODO: Write results json file
 import gleam/io
 import gleam/list
 import gleam/bool
 import gleam/string
 import gleam/option.{None, Some}
 import gleam/dynamic.{Dynamic}
+import gleam/erlang
 import gleam/erlang/atom.{Atom}
 import gleam/erlang/charlist.{Charlist}
 import simplifile
@@ -18,6 +18,15 @@ pub fn main() {
   let results = list.flat_map(suites, run_suite)
   let #(passed, message) = internal.print_summary(results)
   io.println("\n" <> message)
+
+  let assert Ok(_) = case erlang.start_arguments() {
+    ["--json-output-path=" <> path] | ["--json-output-path", path] -> {
+      let json = internal.results_to_json(results)
+      simplifile.write(json, path)
+    }
+    _ -> Ok(Nil)
+  }
+
   halt(case passed {
     True -> 0
     False -> 1
