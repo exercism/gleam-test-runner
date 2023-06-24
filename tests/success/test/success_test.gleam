@@ -1,7 +1,7 @@
-import gleeunit
+import exercism/test_runner
 
 pub fn main() {
-  gleeunit.main()
+  test_runner.main()
 }
 
 pub fn one_test() {

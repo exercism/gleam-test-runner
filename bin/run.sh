@@ -51,7 +51,7 @@ cat "$root_dir"/packages/gleam.toml | sed "s/name = \".*\"/name = \"$underscore_
 
 trap "mv ${manifest_file_bak} ${manifest_file} && mv ${gleam_file_bak} ${gleam_file}" EXIT
 
-sanitise_gleam_output() {
+remove_unwanted_lines() {
   grep -vE \
     -e "^Downloading packages" \
     -e "^ Downloaded [0-9]+ packages in [0-9]\.[0-9]+s" \
@@ -59,6 +59,14 @@ sanitise_gleam_output() {
     -e "^   Compiled in [0-9]+\.[0-9]+s" \
     -e "^    Running [a-z0-9_]+\.main" \
     -e "^Finished in [0-9]+\.[0-9]+"
+}
+
+remove_filepath_prefixes() {
+  sed "s|${solution_dir}/||"
+}
+
+sanitise_gleam_output() {
+  remove_unwanted_lines | remove_filepath_prefixes
 }
 
 # Create the output directory if it doesn't exist
@@ -72,23 +80,14 @@ cd "${solution_dir}" || exit 1
 if ! output=$(gleam build 2>&1)
 then
   output=$(echo "${output}" | sanitise_gleam_output)
-  jq -n --arg output "${output}" '{version: 1, status: "error", message: $output}' > "${results_file}"
+  jq -n --arg output "${output}" '{version: 2, status: "error", message: $output}' > "${results_file}"
   echo "Compilation contained error, see ${output_dir}/results.json"
   exit 0
 fi
 
 echo "${slug}: testing..."
 
-# Run the tests for the provided implementation file and redirect stdout and
-# stderr to capture it
-# Write the results.json file based on the exit code of the command that was 
-# just executed that tested the implementation file
-if output=$(gleam test 2>&1)
-then
-  jq -n '{version: 1, status: "pass"}' > "${results_file}"
-else
-  output=$(echo "${output}" | sanitise_gleam_output)
-  jq -n --arg output "${output}" '{version: 1, status: "fail", message: $output}' > "${results_file}"
-fi
+# Run the tests for the provided implementation file.
+gleam test -- --json-output-path="$results_file" 2>&1 || true
 
 echo "${slug}: done"
