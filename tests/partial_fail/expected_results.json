@@ -1,5 +1,22 @@
 {
-  "version": 1,
+  "version": 2,
   "status": "fail",
-  "message": "\u001b[0;32m.\u001b[0m\u001b[0;32m.\u001b[0m\u001b[0;31mF\u001b[0m\nFailures:\n\n  1) partial_fail_test.three_test\n\u001b[0;31m     Values were not equal\n     expected: \"oops\"\n          got: \"three\"\u001b[0m\n\u001b[0;36m     output: \u001b[0m\n\n\u001b[0;31m3 tests, 1 failures\n\u001b[0m"
+  "tests": [
+    {
+      "name": "three_test",
+      "test_code": "\"three\"\n|> should.equal(\"oops\")",
+      "status": "fail",
+      "message": "test/partial_fail_test.gleam\n   test: three_test\n  error: left != right\n   left: \"\u001b[1m\u001b[32mt\u001b[39m\u001b[22m\u001b[1m\u001b[32mh\u001b[39m\u001b[22m\u001b[1m\u001b[32mr\u001b[39m\u001b[22m\u001b[1m\u001b[32me\u001b[39m\u001b[22m\u001b[1m\u001b[32me\u001b[39m\u001b[22m\"\n  right: \"\u001b[1m\u001b[31mo\u001b[39m\u001b[22m\u001b[1m\u001b[31mo\u001b[39m\u001b[22m\u001b[1m\u001b[31mp\u001b[39m\u001b[22m\u001b[1m\u001b[31ms\u001b[39m\u001b[22m\""
+    },
+    {
+      "name": "two_test",
+      "test_code": "\"two\"\n|> should.equal(\"two\")",
+      "status": "pass"
+    },
+    {
+      "name": "one_test",
+      "test_code": "\"one\"\n|> should.equal(\"one\")",
+      "status": "pass"
+    }
+  ]
 }

@@ -5,4 +5,5 @@ version = "0.1.0"
 gleam_stdlib = "~> 0.26"
 
 [dev-dependencies]
-gleeunit = "~> 0.10"
+exercism_test_runner = "~> 1.0"
+

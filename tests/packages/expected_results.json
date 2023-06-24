@@ -1,4 +1,11 @@
 {
-  "version": 1,
-  "status": "pass"
+  "version": 2,
+  "status": "pass",
+  "tests": [
+    {
+      "name": "bitwise_test",
+      "test_code": "bitwise.shift_left(1, 1)\n|> should.equal(2)",
+      "status": "pass"
+    }
+  ]
 }

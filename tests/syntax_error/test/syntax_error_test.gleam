@@ -1,11 +1,10 @@
-import gleeunit
-import gleeunit/should
+import exercism/test_runner
+import exercism/should
 
 pub fn main() {
-  gleeunit.main()
+  test_runner.main()
 }
 
-// gleeunit test functions end in `_test`
 pub fn hello_world_test() {
   1
   |> should.equal(1)
