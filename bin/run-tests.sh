@@ -26,7 +26,7 @@ for test_dir in tests/*; do
   rm -f "${results_file_path}"
   bin/run.sh "${test_dir_name}" "${test_dir_path}" "${test_dir_path}" > /dev/null
 
-  if cat "${results_file_path}" | jq . | diff - "${expected_results_file_path}" --color=always
+  if cat "${results_file_path}" | jq . | diff - "${expected_results_file_path}"
   then
     echo "${test_dir_name}: pass"
   else
