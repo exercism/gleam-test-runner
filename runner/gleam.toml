@@ -1,5 +1,5 @@
 name = "exercism_test_runner"
-version = "1.0.0"
+version = "1.1.0"
 description = "A test framework for Gleam exercises on Exercism"
 licences = ["Apache-2.0"]
 repository = { type = "github", user = "exercism", repo = "gleam-test-runner" }
