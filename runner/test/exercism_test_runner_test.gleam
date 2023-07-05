@@ -74,10 +74,10 @@ pub fn print_unequal_test() {
   |> internal.print_error("src/wibble.gleam", "wobble_test")
   |> should.equal(
     "src/wibble.gleam
-   test: wobble_test
-  error: left != right
-   left: \"ab\"
-  right: \"ab\e[1m\e[31mc\e[39m\e[22m\"",
+\e[36m   test: \e[39mwobble_test
+\e[36m  error: \e[39mleft != right
+\e[36m   left: \e[39m\"ab\"
+\e[36m  right: \e[39m\"ab\e[1m\e[31mc\e[39m\e[22m\"",
   )
 }
 
@@ -86,9 +86,9 @@ pub fn print_todo_test() {
   |> internal.print_error("src/wibble.gleam", "wobble_test")
   |> should.equal(
     "src/wibble.gleam
-   test: wobble_test
-  error: todo
-   info: ok",
+\e[36m   test: \e[39mwobble_test
+\e[36m  error: \e[39mtodo
+\e[36m   info: \e[39mok",
   )
 }
 
@@ -97,9 +97,9 @@ pub fn print_panic_test() {
   |> internal.print_error("src/wibble.gleam", "wobble_test")
   |> should.equal(
     "src/wibble.gleam
-   test: wobble_test
-  error: panic
-   info: ah!",
+\e[36m   test: \e[39mwobble_test
+\e[36m  error: \e[39mpanic
+\e[36m   info: \e[39mah!",
   )
 }
 
@@ -108,9 +108,9 @@ pub fn print_crashed_test() {
   |> internal.print_error("src/wibble.gleam", "wobble_test")
   |> should.equal(
     "src/wibble.gleam
-   test: wobble_test
-  error: Program crashed
-  cause: Error(Nil)",
+\e[36m   test: \e[39mwobble_test
+\e[36m  error: \e[39mProgram crashed
+\e[36m  cause: \e[39mError(Nil)",
   )
 }
 
@@ -119,9 +119,9 @@ pub fn print_unmatched_test() {
   |> internal.print_error("src/wibble.gleam", "wobble_test")
   |> should.equal(
     "src/wibble.gleam:214
-   test: wobble_test
-  error: Pattern match failed
-  value: Ok(1)",
+\e[36m   test: \e[39mwobble_test
+\e[36m  error: \e[39mPattern match failed
+\e[36m  value: \e[39mOk(1)",
   )
 }
 
@@ -130,9 +130,9 @@ pub fn print_unmatched_case_test() {
   |> internal.print_error("src/wibble.gleam", "wobble_test")
   |> should.equal(
     "src/wibble.gleam
-   test: wobble_test
-  error: Pattern match failed
-  value: Ok(1)",
+\e[36m   test: \e[39mwobble_test
+\e[36m  error: \e[39mPattern match failed
+\e[36m  value: \e[39mOk(1)",
   )
 }
 
@@ -150,7 +150,7 @@ pub fn print_summary_passed_test() {
     internal.TestResult(test, None, ""),
   ]
   |> internal.print_summary
-  |> should.equal(#(True, "Ran 3 tests, 0 failed"))
+  |> should.equal(#(True, "\e[32mRan 3 tests, 0 failed\e[39m"))
 }
 
 pub fn print_summary_failed_test() {
@@ -167,7 +167,7 @@ pub fn print_summary_failed_test() {
     internal.TestResult(test, None, ""),
   ]
   |> internal.print_summary
-  |> should.equal(#(False, "Ran 3 tests, 1 failed"))
+  |> should.equal(#(False, "\e[31mRan 3 tests, 1 failed\e[39m"))
 }
 
 pub fn run_test_test() {

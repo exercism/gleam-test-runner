@@ -9,6 +9,7 @@ import gleam/bit_string
 import gleam/dynamic.{Dynamic}
 import gleam/erlang
 import gleam/erlang/atom
+import gleam_community/ansi
 
 pub type Error {
   Unequal(left: Dynamic, right: Dynamic)
@@ -66,76 +67,75 @@ fn undent(line: String) -> String {
   }
 }
 
+fn print_properties(
+  header: String,
+  properties: List(#(String, String)),
+) -> String {
+  properties
+  |> list.map(fn(pair) {
+    let key = string.pad_left(pair.0, 7, " ") <> ": "
+    ansi.cyan(key) <> pair.1
+  })
+  |> list.prepend(header)
+  |> string.join("\n")
+}
+
 pub fn print_error(error: Error, path: String, test_name: String) -> String {
   case error {
     Unequal(left, right) -> {
       let diff =
-        gap.compare_strings(string.inspect(left), string.inspect(right))
-        |> gap.to_styled
-      string.join(
-        [
-          path,
-          "   test: " <> test_name,
-          "  error: left != right",
-          "   left: " <> diff.first,
-          "  right: " <> diff.second,
-        ],
-        "\n",
-      )
+        gap.to_styled(gap.compare_strings(
+          string.inspect(left),
+          string.inspect(right),
+        ))
+      path
+      |> print_properties([
+        #("test", test_name),
+        #("error", "left != right"),
+        #("left", diff.first),
+        #("right", diff.second),
+      ])
     }
     Todo(message) -> {
-      string.join(
-        [
-          path,
-          "   test: " <> test_name,
-          "  error: todo",
-          "   info: " <> message,
-        ],
-        "\n",
+      print_properties(
+        path,
+        [#("test", test_name), #("error", "todo"), #("info", message)],
       )
     }
     Panic(message) -> {
-      string.join(
-        [
-          path,
-          "   test: " <> test_name,
-          "  error: panic",
-          "   info: " <> message,
-        ],
-        "\n",
+      print_properties(
+        path,
+        [#("test", test_name), #("error", "panic"), #("info", message)],
       )
     }
     Unmatched(value, line) -> {
-      string.join(
+      print_properties(
+        path <> ":" <> int.to_string(line),
         [
-          path <> ":" <> int.to_string(line),
-          "   test: " <> test_name,
-          "  error: Pattern match failed",
-          "  value: " <> string.inspect(value),
+          #("test", test_name),
+          #("error", "Pattern match failed"),
+          #("value", string.inspect(value)),
         ],
-        "\n",
       )
     }
     UnmatchedCase(value) -> {
-      string.join(
+      print_properties(
+        path,
         [
-          path,
-          "   test: " <> test_name,
-          "  error: Pattern match failed",
-          "  value: " <> string.inspect(value),
+          #("test", test_name),
+          #("error", "Pattern match failed"),
+          #("value", string.inspect(value)),
         ],
-        "\n",
       )
     }
     Crashed(error) -> {
-      string.join(
+      print_properties(
+        path,
         [
-          path,
-          "   test: " <> test_name,
-          "  error: Program crashed",
-          "  cause: " <> string.inspect(error),
+          #("test", test_name),
+          #("error", "Program crashed"),
+          #("cause", string.inspect(error)),
         ],
-        "\n",
       )
     }
   }
@@ -151,7 +151,12 @@ pub fn print_summary(results: List(TestResult)) -> #(Bool, String) {
     |> list.filter(fn(result) { result.error != None })
     |> list.length
     |> int.to_string
-  let message = "Ran " <> total <> " tests, " <> failed <> " failed"
+
+  let colour = case failed {
+    "0" -> ansi.green
+    _ -> ansi.red
+  }
+  let message = colour("Ran " <> total <> " tests, " <> failed <> " failed")
   #(failed == "0", message)
 }
 

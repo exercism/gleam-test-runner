@@ -11,6 +11,7 @@ import gleam/erlang/charlist.{Charlist}
 import simplifile
 import glance
 import exercism_test_runner/internal.{Error, Suite, Test, TestResult}
+import gleam_community/ansi
 
 pub fn main() {
   let assert Ok(files) = read_directory("test")
@@ -45,9 +46,9 @@ fn run_suite(suite: Suite) -> List(TestResult) {
 fn run_test(test: Test) -> TestResult {
   let result = internal.run_test(test)
   case result.error {
-    None -> io.print(".")
+    None -> io.print(ansi.green("."))
     Some(error) -> {
-      io.println("F")
+      io.println(ansi.red("F"))
       io.println(internal.print_error(error, test.module_path, test.name))
     }
   }
