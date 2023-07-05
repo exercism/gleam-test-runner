@@ -1,8 +1,8 @@
 import exercism_test_runner/internal.{Error, Unequal}
 import gleam/dynamic
 
-external fn raise(Error) -> a =
-  "erlang" "error"
+@external(erlang, "erlang", "error")
+fn raise(a: Error) -> a
 
 pub fn equal(a, b) {
   case a == b {
