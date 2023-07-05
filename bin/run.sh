@@ -77,6 +77,9 @@ echo "${slug}: compiling..."
 
 cd "${solution_dir}" || exit 1
 
+# Remove warnings from dependencies
+gleam fix build/packages --target erlang > /dev/null
+
 if ! output=$(gleam build 2>&1)
 then
   output=$(echo "${output}" | sanitise_gleam_output)
