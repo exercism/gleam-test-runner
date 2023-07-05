@@ -189,7 +189,7 @@ fn decode_pattern_match_failed_error(
       fn(_, value, line) { Unmatched(value, line) },
       dynamic.field(
         atom.create_from_string("gleam_error"),
-        decode_tag("Assertion pattern match failed", _),
+        decode_tag(atom.create_from_string("let_assert"), _),
       ),
       dynamic.field(atom.create_from_string("value"), Ok),
       dynamic.field(atom.create_from_string("line"), dynamic.int),
