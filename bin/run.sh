@@ -51,7 +51,7 @@ cat "$root_dir"/packages/gleam.toml | sed "s/name = \".*\"/name = \"$underscore_
 
 trap "mv ${manifest_file_bak} ${manifest_file} && mv ${gleam_file_bak} ${gleam_file}" EXIT
 
-remove_unwanted_lines() {
+remove_unwanted_compiler_lines() {
   grep -vE \
     -e "^Downloading packages" \
     -e "^ Downloaded [0-9]+ packages in [0-9]\.[0-9]+s" \
@@ -61,12 +61,18 @@ remove_unwanted_lines() {
     -e "^Finished in [0-9]+\.[0-9]+"
 }
 
+remove_erlang_lines() {
+  grep -vE \
+    -e "^% " \
+    -e "^build/.*\.erl:[0-9]+:[0-9]+: "
+}
+
 remove_filepath_prefixes() {
   sed "s|${solution_dir}/||"
 }
 
 sanitise_gleam_output() {
-  remove_unwanted_lines | remove_filepath_prefixes
+  remove_unwanted_compiler_lines | remove_filepath_prefixes | remove_erlang_lines
 }
 
 # Create the output directory if it doesn't exist
