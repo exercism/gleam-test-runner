@@ -54,11 +54,11 @@ fn run_test(test: Test) -> TestResult {
   result
 }
 
-external fn read_directory(String) -> Result(List(Charlist), Dynamic) =
-  "file" "list_dir"
+@external(erlang, "file", "list_dir")
+fn read_directory(a: String) -> Result(List(Charlist), Dynamic)
 
-external fn atom_to_module(Atom) -> BeamModule =
-  "gleam_stdlib" "identity"
+@external(erlang, "gleam_stdlib", "identity")
+fn atom_to_module(a: Atom) -> BeamModule
 
 fn read_module(filename: Charlist) -> Suite {
   let filename = charlist.to_string(filename)
@@ -102,12 +102,12 @@ fn get_test(
   Ok(Test(name: name, src: src, module_path: module_path, function: function))
 }
 
-pub external type BeamModule
+pub type BeamModule
 
 /// This function is unsafe. It does not verify that the atom is a BEAM module
 /// currently loaded by the VM, or that the function exists. Don't mess up!
-external fn apply(BeamModule, Atom, List(Dynamic)) -> Dynamic =
-  "erlang" "apply"
+@external(erlang, "erlang", "apply")
+fn apply(a: BeamModule, b: Atom, c: List(Dynamic)) -> Dynamic
 
-external fn halt(Int) -> a =
-  "erlang" "halt"
+@external(erlang, "erlang", "halt")
+fn halt(a: Int) -> a

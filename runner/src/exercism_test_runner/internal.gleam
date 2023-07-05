@@ -258,11 +258,11 @@ pub type ProcessDictionaryKey {
   ExecismTestRunnerUserOutput
 }
 
-external fn process_dictionary_set(ProcessDictionaryKey, String) -> Dynamic =
-  "erlang" "put"
+@external(erlang, "erlang", "put")
+fn process_dictionary_set(a: ProcessDictionaryKey, b: String) -> Dynamic
 
-external fn process_dictionary_get(ProcessDictionaryKey) -> Dynamic =
-  "erlang" "get"
+@external(erlang, "erlang", "get")
+fn process_dictionary_get(a: ProcessDictionaryKey) -> Dynamic
 
 /// Append a string to the output store in the process dictionary.
 /// In future it may be preferable to use a global actor or similar so we can
