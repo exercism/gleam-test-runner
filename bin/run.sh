@@ -63,6 +63,7 @@ remove_unwanted_compiler_lines() {
 
 remove_erlang_lines() {
   grep -vE \
+    -e "^$" \
     -e "^% " \
     -e "^build/.*\.erl:[0-9]+:[0-9]+: "
 }
