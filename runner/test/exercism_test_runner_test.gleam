@@ -77,7 +77,7 @@ pub fn print_unequal_test() {
 \e[36m   test: \e[39mwobble_test
 \e[36m  error: \e[39mleft != right
 \e[36m   left: \e[39m\"ab\"
-\e[36m  right: \e[39m\"ab\e[1m\e[31mc\e[39m\e[22m\"",
+\e[36m  right: \e[39m\"abc\"",
   )
 }
 

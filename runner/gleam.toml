@@ -6,7 +6,6 @@ repository = { type = "github", user = "exercism", repo = "gleam-test-runner" }
 links = [{ title = "Website", href = "https://exercism.org/tracks/gleam" }]
 
 [dependencies]
-gap = "~> 0.4"
 glance = "~> 0.5"
 gleam_erlang = "~> 0.19"
 gleam_json = "~> 0.5"
