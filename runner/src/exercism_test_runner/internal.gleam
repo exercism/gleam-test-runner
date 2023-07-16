@@ -1,3 +1,4 @@
+import gap
 import gleam/int
 import gleam/json.{Json}
 import gleam/list
@@ -82,12 +83,17 @@ fn print_properties(
 pub fn print_error(error: Error, path: String, test_name: String) -> String {
   case error {
     Unequal(left, right) -> {
+      let diff =
+        gap.to_styled(gap.compare_strings(
+          string.inspect(left),
+          string.inspect(right),
+        ))
       path
       |> print_properties([
         #("test", test_name),
         #("error", "left != right"),
-        #("left", string.inspect(left)),
-        #("right", string.inspect(right)),
+        #("left", diff.first),
+        #("right", diff.second),
       ])
     }
     Todo(message) -> {

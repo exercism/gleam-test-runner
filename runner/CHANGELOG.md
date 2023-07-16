@@ -1,5 +1,10 @@
 # Changelog
 
+## v1.3.0 - 2023-07-16
+
+- Diffing has been re-enabled. Thanks to @JohnBjrk for the new improved diffing
+  algorithm!
+
 ## v1.2.0 - 2023-07-10
 
 - Diffing of the expected and actual output has been temporarily removed due to
