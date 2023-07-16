@@ -34,23 +34,6 @@ manifest_file_bak="${manifest_file}.bak"
 gleam_file="${solution_dir}/gleam.toml"
 gleam_file_bak="${gleam_file}.bak"
 
-# The container environment does not have network access in order to download
-# dependencies so we copy them from a precompiled Gleam project.
-# The config for this project is also copied to ensure that the build tool does
-# not attempt to download some other version of the dependencies or any
-# additional ones.
-#
-echo "Copying config and dependencies..."
-
-cp "${manifest_file}" "${manifest_file_bak}"
-cp "${gleam_file}" "${gleam_file_bak}"
-rm -fr "$solution_dir"/build
-cp -r "$root_dir"/packages/build "$solution_dir"/build
-cp "$root_dir"/packages/manifest.toml "${manifest_file}"
-cat "$root_dir"/packages/gleam.toml | sed "s/name = \".*\"/name = \"$underscore_slug\"/" > "${gleam_file}"
-
-trap "mv ${manifest_file_bak} ${manifest_file} && mv ${gleam_file_bak} ${gleam_file}" EXIT
-
 remove_unwanted_compiler_lines() {
   grep -vE \
     -e "^Downloading packages" \
@@ -76,6 +59,24 @@ sanitise_gleam_output() {
   remove_unwanted_compiler_lines | remove_filepath_prefixes | remove_erlang_lines
 }
 
+
+# The container environment does not have network access in order to download
+# dependencies so we copy them from a precompiled Gleam project.
+# The config for this project is also copied to ensure that the build tool does
+# not attempt to download some other version of the dependencies or any
+# additional ones.
+#
+echo "Copying config and dependencies..."
+
+cp "${manifest_file}" "${manifest_file_bak}"
+cp "${gleam_file}" "${gleam_file_bak}"
+rm -fr "$solution_dir"/build
+cp -r "$root_dir"/packages/build "$solution_dir"/build
+cp "$root_dir"/packages/manifest.toml "${manifest_file}"
+cat "$root_dir"/packages/gleam.toml | sed "s/name = \".*\"/name = \"$underscore_slug\"/" > "${gleam_file}"
+
+trap "mv ${manifest_file_bak} ${manifest_file} && mv ${gleam_file_bak} ${gleam_file}" EXIT
+
 # Create the output directory if it doesn't exist
 mkdir -p "${output_dir}"
 
@@ -84,8 +85,9 @@ echo "${slug}: compiling..."
 
 cd "${solution_dir}" || exit 1
 
-# Remove warnings from dependencies
-gleam fix build/packages --target erlang > /dev/null
+# Remove the precompiled Erlang files to ensure that they do not get copied and
+# compiled into .BEAM files by the Gleam build tool.
+rm build/packages/*/src/*.erl
 
 if ! output=$(gleam build 2>&1)
 then
