@@ -6,13 +6,13 @@
       "name": "two_test",
       "test_code": "\"two\"\n|> should.equal(\"oops\")",
       "status": "fail",
-      "message": "test/all_fail_test.gleam\n\u001b[36m   test: \u001b[39mtwo_test\n\u001b[36m  error: \u001b[39mleft != right\n\u001b[36m   left: \u001b[39m\"two\"\n\u001b[36m  right: \u001b[39m\"oops\""
+      "message": "test/all_fail_test.gleam\n\u001b[36m   test: \u001b[39mtwo_test\n\u001b[36m  error: \u001b[39mleft != right\n\u001b[36m   left: \u001b[39m\"\u001b[1m\u001b[32mt\u001b[39m\u001b[22m\u001b[1m\u001b[32mw\u001b[39m\u001b[22mo\"\n\u001b[36m  right: \u001b[39m\"o\u001b[1m\u001b[31mo\u001b[39m\u001b[22m\u001b[1m\u001b[31mp\u001b[39m\u001b[22m\u001b[1m\u001b[31ms\u001b[39m\u001b[22m\""
     },
     {
       "name": "one_test",
       "test_code": "\"one\"\n|> should.equal(\"oops\")",
       "status": "fail",
-      "message": "test/all_fail_test.gleam\n\u001b[36m   test: \u001b[39mone_test\n\u001b[36m  error: \u001b[39mleft != right\n\u001b[36m   left: \u001b[39m\"one\"\n\u001b[36m  right: \u001b[39m\"oops\""
+      "message": "test/all_fail_test.gleam\n\u001b[36m   test: \u001b[39mone_test\n\u001b[36m  error: \u001b[39mleft != right\n\u001b[36m   left: \u001b[39m\"o\u001b[1m\u001b[32mn\u001b[39m\u001b[22m\u001b[1m\u001b[32me\u001b[39m\u001b[22m\"\n\u001b[36m  right: \u001b[39m\"o\u001b[1m\u001b[31mo\u001b[39m\u001b[22m\u001b[1m\u001b[31mp\u001b[39m\u001b[22m\u001b[1m\u001b[31ms\u001b[39m\u001b[22m\""
     }
   ]
 }

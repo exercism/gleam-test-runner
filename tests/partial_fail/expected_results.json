@@ -6,7 +6,7 @@
       "name": "three_test",
       "test_code": "\"three\"\n|> should.equal(\"oops\")",
       "status": "fail",
-      "message": "test/partial_fail_test.gleam\n\u001b[36m   test: \u001b[39mthree_test\n\u001b[36m  error: \u001b[39mleft != right\n\u001b[36m   left: \u001b[39m\"three\"\n\u001b[36m  right: \u001b[39m\"oops\""
+      "message": "test/partial_fail_test.gleam\n\u001b[36m   test: \u001b[39mthree_test\n\u001b[36m  error: \u001b[39mleft != right\n\u001b[36m   left: \u001b[39m\"\u001b[1m\u001b[32mt\u001b[39m\u001b[22m\u001b[1m\u001b[32mh\u001b[39m\u001b[22m\u001b[1m\u001b[32mr\u001b[39m\u001b[22m\u001b[1m\u001b[32me\u001b[39m\u001b[22m\u001b[1m\u001b[32me\u001b[39m\u001b[22m\"\n\u001b[36m  right: \u001b[39m\"\u001b[1m\u001b[31mo\u001b[39m\u001b[22m\u001b[1m\u001b[31mo\u001b[39m\u001b[22m\u001b[1m\u001b[31mp\u001b[39m\u001b[22m\u001b[1m\u001b[31ms\u001b[39m\u001b[22m\""
     },
     {
       "name": "two_test",
