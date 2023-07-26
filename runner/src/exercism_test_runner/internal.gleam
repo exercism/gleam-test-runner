@@ -83,17 +83,35 @@ fn print_properties(
 pub fn print_error(error: Error, path: String, test_name: String) -> String {
   case error {
     Unequal(left, right) -> {
-      let diff =
-        gap.to_styled(gap.compare_strings(
-          string.inspect(left),
-          string.inspect(right),
-        ))
+      let #(left_colored, right_colored) = case
+        #(dynamic.bool(left), dynamic.bool(right))
+      {
+        #(Ok(left_bool), Ok(right_bool)) -> #(
+          left_bool
+          |> string.inspect()
+          |> ansi.green()
+          |> ansi.bold(),
+          right_bool
+          |> string.inspect()
+          |> ansi.red()
+          |> ansi.bold(),
+        )
+        _ -> {
+          let diff =
+            gap.to_styled(gap.compare_strings(
+              string.inspect(left),
+              string.inspect(right),
+            ))
+          #(diff.first, diff.second)
+        }
+      }
+
       path
       |> print_properties([
         #("test", test_name),
         #("error", "left != right"),
-        #("left", diff.first),
-        #("right", diff.second),
+        #("left", left_colored),
+        #("right", right_colored),
       ])
     }
     Todo(message) -> {
