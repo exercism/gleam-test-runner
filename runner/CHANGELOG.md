@@ -1,6 +1,6 @@
 # Changelog
 
-## v1.4.0 - Unreleased
+## v1.4.0 - 2023-08-01
 
 - Error message now contain the module and line of the error when possible.
 
