@@ -32,7 +32,6 @@ pub fn case_test() {
 }
 
 pub fn todo_test() {
-  // todo
   Nil
 }
 
@@ -82,23 +81,25 @@ pub fn print_unequal_test() {
 }
 
 pub fn print_todo_test() {
-  internal.Todo("ok")
+  internal.Todo("ok", "my/mod", 12)
   |> internal.print_error("src/wibble.gleam", "wobble_test")
   |> should.equal(
     "src/wibble.gleam
 \e[36m   test: \e[39mwobble_test
 \e[36m  error: \e[39mtodo
+\e[36m   site: \e[39mmy/mod:12
 \e[36m   info: \e[39mok",
   )
 }
 
 pub fn print_panic_test() {
-  internal.Panic("ah!")
+  internal.Panic("ah!", "the/mod", 14)
   |> internal.print_error("src/wibble.gleam", "wobble_test")
   |> should.equal(
     "src/wibble.gleam
 \e[36m   test: \e[39mwobble_test
 \e[36m  error: \e[39mpanic
+\e[36m   site: \e[39mthe/mod:14
 \e[36m   info: \e[39mah!",
   )
 }
@@ -115,12 +116,13 @@ pub fn print_crashed_test() {
 }
 
 pub fn print_unmatched_test() {
-  internal.Unmatched(dynamic.from(Ok(1)), 214)
+  internal.Unmatched(dynamic.from(Ok(1)), "some/mod", 214)
   |> internal.print_error("src/wibble.gleam", "wobble_test")
   |> should.equal(
-    "src/wibble.gleam:214
+    "src/wibble.gleam
 \e[36m   test: \e[39mwobble_test
 \e[36m  error: \e[39mPattern match failed
+\e[36m   site: \e[39msome/mod:214
 \e[36m  value: \e[39mOk(1)",
   )
 }
@@ -162,7 +164,7 @@ pub fn print_summary_failed_test() {
       src: "",
     )
   [
-    internal.TestResult(test, Some(internal.Todo("")), ""),
+    internal.TestResult(test, Some(internal.Todo("", "", 0)), ""),
     internal.TestResult(test, None, ""),
     internal.TestResult(test, None, ""),
   ]
@@ -242,7 +244,7 @@ pub fn results_to_json_failed_test() {
         function: fn() { Ok(Nil) },
         src: "src1",
       ),
-      Some(internal.Todo("todo")),
+      Some(internal.Todo("todo", "wibble", 12)),
       "One two three!",
     ),
     internal.TestResult(
@@ -271,7 +273,7 @@ pub fn results_to_json_failed_test() {
           #(
             "message",
             json.string(internal.print_error(
-              internal.Todo("todo"),
+              internal.Todo("todo", "wibble", 12),
               "src/wibble.gleam",
               "one_test",
             )),

@@ -13,9 +13,9 @@ import gleam_community/ansi
 
 pub type Error {
   Unequal(left: Dynamic, right: Dynamic)
-  Todo(message: String)
-  Panic(message: String)
-  Unmatched(value: Dynamic, line: Int)
+  Todo(message: String, module: String, line: Int)
+  Panic(message: String, module: String, line: Int)
+  Unmatched(value: Dynamic, module: String, line: Int)
   UnmatchedCase(value: Dynamic)
   Crashed(error: Dynamic)
 }
@@ -114,24 +114,35 @@ pub fn print_error(error: Error, path: String, test_name: String) -> String {
         #("right", right_colored),
       ])
     }
-    Todo(message) -> {
+    Todo(message, module, line) -> {
       print_properties(
         path,
-        [#("test", test_name), #("error", "todo"), #("info", message)],
+        [
+          #("test", test_name),
+          #("error", "todo"),
+          #("site", module <> ":" <> int.to_string(line)),
+          #("info", message),
+        ],
       )
     }
-    Panic(message) -> {
+    Panic(message, module, line) -> {
       print_properties(
         path,
-        [#("test", test_name), #("error", "panic"), #("info", message)],
+        [
+          #("test", test_name),
+          #("error", "panic"),
+          #("site", module <> ":" <> int.to_string(line)),
+          #("info", message),
+        ],
       )
     }
-    Unmatched(value, line) -> {
+    Unmatched(value, module, line) -> {
       print_properties(
-        path <> ":" <> int.to_string(line),
+        path,
         [
           #("test", test_name),
           #("error", "Pattern match failed"),
+          #("site", module <> ":" <> int.to_string(line)),
           #("value", string.inspect(value)),
         ],
       )
@@ -208,40 +219,48 @@ fn decode_pattern_match_failed_error(
   error: Dynamic,
 ) -> Result(Error, dynamic.DecodeErrors) {
   let decoder =
-    dynamic.decode3(
-      fn(_, value, line) { Unmatched(value, line) },
+    dynamic.decode4(
+      fn(_, value, module, line) { Unmatched(value, module, line) },
       dynamic.field(
         atom.create_from_string("gleam_error"),
         decode_tag(atom.create_from_string("let_assert"), _),
       ),
       dynamic.field(atom.create_from_string("value"), Ok),
+      dynamic.field(atom.create_from_string("module"), dynamic.string),
       dynamic.field(atom.create_from_string("line"), dynamic.int),
     )
   decoder(error)
 }
 
+import gleam/io
+
 fn decode_todo_error(error: Dynamic) -> Result(Error, dynamic.DecodeErrors) {
+  io.debug(error)
   let decoder =
-    dynamic.decode2(
-      fn(_, message) { Todo(message) },
+    dynamic.decode4(
+      fn(_, message, module, line) { Todo(message, module, line) },
       dynamic.field(
         atom.create_from_string("gleam_error"),
         decode_tag(atom.create_from_string("todo"), _),
       ),
       dynamic.field(atom.create_from_string("message"), dynamic.string),
+      dynamic.field(atom.create_from_string("module"), dynamic.string),
+      dynamic.field(atom.create_from_string("line"), dynamic.int),
     )
   decoder(error)
 }
 
 fn decode_panic_error(error: Dynamic) -> Result(Error, dynamic.DecodeErrors) {
   let decoder =
-    dynamic.decode2(
-      fn(_, message) { Panic(message) },
+    dynamic.decode4(
+      fn(_, message, module, line) { Panic(message, module, line) },
       dynamic.field(
         atom.create_from_string("gleam_error"),
         decode_tag(atom.create_from_string("panic"), _),
       ),
       dynamic.field(atom.create_from_string("message"), dynamic.string),
+      dynamic.field(atom.create_from_string("module"), dynamic.string),
+      dynamic.field(atom.create_from_string("line"), dynamic.int),
     )
   decoder(error)
 }

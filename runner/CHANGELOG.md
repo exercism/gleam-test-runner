@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.4.0 - Unreleased
+
+- Error message now contain the module and line of the error when possible.
+
 ## v1.3.0 - 2023-07-16
 
 - Diffing has been re-enabled. Thanks to @JohnBjrk for the new improved diffing
