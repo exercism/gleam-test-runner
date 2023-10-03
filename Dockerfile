@@ -1,4 +1,4 @@
-FROM ghcr.io/gleam-lang/gleam:v0.30.5-erlang-alpine
+FROM ghcr.io/gleam-lang/gleam:v0.31.0-erlang-alpine
 
 # Install packages required to run the tests
 RUN apk add --no-cache jq coreutils
@@ -11,7 +11,6 @@ COPY . .
 # compiling test projects.
 RUN cd packages \
   && gleam deps download \
-  && gleam fix build/packages --target erlang \
   && gleam build
 
 ENTRYPOINT ["/opt/test-runner/bin/run.sh"]
