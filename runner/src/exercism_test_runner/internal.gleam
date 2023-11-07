@@ -1,12 +1,12 @@
 import gap
 import gleam/int
-import gleam/json.{Json}
+import gleam/json.{type Json}
 import gleam/list
 import gleam/result
 import gleam/string
-import gleam/option.{None, Option, Some}
-import gleam/bit_string
-import gleam/dynamic.{Dynamic}
+import gleam/option.{type Option, None, Some}
+import gleam/bit_array
+import gleam/dynamic.{type Dynamic}
 import gleam/erlang
 import gleam/erlang/atom
 import gleam_community/ansi
@@ -39,10 +39,10 @@ pub type TestResult {
 
 pub fn extract_function_body(src: String, start: Int, end: Int) -> String {
   src
-  |> bit_string.from_string
-  |> bit_string.slice(start, end - start)
+  |> bit_array.from_string
+  |> bit_array.slice(start, end - start)
   |> result.unwrap(<<>>)
-  |> bit_string.to_string
+  |> bit_array.to_string
   |> result.unwrap("")
   |> string.drop_right(1)
   |> drop_function_header

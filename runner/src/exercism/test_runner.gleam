@@ -4,13 +4,15 @@ import gleam/list
 import gleam/bool
 import gleam/string
 import gleam/option.{None, Some}
-import gleam/dynamic.{Dynamic}
+import gleam/dynamic.{type Dynamic}
 import gleam/erlang
-import gleam/erlang/atom.{Atom}
-import gleam/erlang/charlist.{Charlist}
+import gleam/erlang/atom.{type Atom}
+import gleam/erlang/charlist.{type Charlist}
 import simplifile
 import glance
-import exercism_test_runner/internal.{Error, Suite, Test, TestResult}
+import exercism_test_runner/internal.{
+  type Suite, type Test, type TestResult, Suite, Test,
+}
 import gleam_community/ansi
 
 pub fn main() {
