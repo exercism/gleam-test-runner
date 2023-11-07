@@ -1,5 +1,5 @@
 {
   "version": 2,
   "status": "error",
-  "message": "error: Unknown module field\n   ┌─ test/empty_file_test.gleam:10:13\n   │\n10 │   empty_file.hello_world()\n   │             ^^^^^^^^^^^^\nThe module `empty_file` does not have a `hello_world` field."
+  "message": "error: Unknown module field\n   ┌─ test/empty_file_test.gleam:10:13\n   │\n10 │   empty_file.hello_world()\n   │             ^^^^^^^^^^^^\nThe module `empty_file` does not have a `hello_world` value."
 }
