@@ -1,4 +1,4 @@
-import exercism_test_runner/internal.{Error, Unequal}
+import exercism_test_runner/internal.{type Error, Unequal}
 import gleam/dynamic
 
 @external(erlang, "erlang", "error")
