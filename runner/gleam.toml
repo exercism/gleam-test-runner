@@ -1,5 +1,5 @@
 name = "exercism_test_runner"
-version = "1.5.0"
+version = "1.6.0"
 description = "A test framework for Gleam exercises on Exercism"
 licences = ["Apache-2.0"]
 repository = { type = "github", user = "exercism", repo = "gleam-test-runner" }
@@ -12,7 +12,7 @@ glance = "~> 0.5"
 gleam_erlang = "~> 0.19"
 gleam_json = "~> 0.5"
 gleam_stdlib = "~> 0.32"
-simplifile = "~> 0.1"
+simplifile = "~> 0.3"
 gleam_community_ansi = "~> 1.1"
 
 [dev-dependencies]
