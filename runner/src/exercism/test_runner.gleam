@@ -25,7 +25,7 @@ pub fn main() {
   let assert Ok(_) = case erlang.start_arguments() {
     ["--json-output-path=" <> path] | ["--json-output-path", path] -> {
       let json = internal.results_to_json(results)
-      simplifile.write(json, path)
+      simplifile.write(path, json)
     }
     _ -> Ok(Nil)
   }
