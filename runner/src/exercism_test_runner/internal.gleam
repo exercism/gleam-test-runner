@@ -21,7 +21,7 @@ pub type Error {
 }
 
 pub type Suite {
-  Suite(name: String, path: String, tests: List(Test))
+  Suite(name: String, path: String, tests: List(the_test))
 }
 
 pub type Test {
@@ -34,7 +34,7 @@ pub type Test {
 }
 
 pub type TestResult {
-  TestResult(test: Test, error: Option(Error), output: String)
+  TestResult(the_test: Test, error: Option(Error), output: String)
 }
 
 pub fn extract_function_body(src: String, start: Int, end: Int) -> String {
@@ -333,17 +333,17 @@ pub fn get_output() -> String {
   |> result.unwrap("")
 }
 
-pub fn run_test(test: Test) -> TestResult {
+pub fn run_test(the_test: Test) -> TestResult {
   clear_output()
-  let error = case test.function() {
+  let error = case the_test.function() {
     Ok(_) -> None
     Error(error) -> Some(error)
   }
-  TestResult(test: test, error: error, output: get_output())
+  TestResult(the_test: test, error: error, output: get_output())
 }
 
 pub fn results_to_json(results: List(TestResult)) -> String {
-  let failed = list.any(results, fn(test) { test.error != None })
+  let failed = list.any(results, fn(the_test) { the_test.error != None })
   let status = case failed {
     True -> "fail"
     False -> "pass"
@@ -359,7 +359,7 @@ pub fn results_to_json(results: List(TestResult)) -> String {
 fn test_result_json(result: TestResult) -> Json {
   let fields = case result.error {
     Some(error) -> {
-      let error = print_error(error, result.test.module_path, result.test.name)
+      let error = print_error(error, result.the_test.module_path, result.the_test.name)
       [#("status", json.string("fail")), #("message", json.string(error))]
     }
     None -> [#("status", json.string("pass"))]
@@ -369,8 +369,8 @@ fn test_result_json(result: TestResult) -> Json {
     output -> [#("output", json.string(output)), ..fields]
   }
   let fields = [
-    #("name", json.string(result.test.name)),
-    #("test_code", json.string(result.test.src)),
+    #("name", json.string(result.the_test.name)),
+    #("test_code", json.string(result.the_test.src)),
     ..fields
   ]
   json.object(fields)
