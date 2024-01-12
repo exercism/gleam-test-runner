@@ -45,13 +45,14 @@ fn run_suite(suite: Suite) -> List(TestResult) {
   list.map(suite.tests, run_test)
 }
 
-fn run_test(test: Test) -> TestResult {
-  let result = internal.run_test(test)
+fn run_test(the_test: Test) -> TestResult {
+  let result = internal.run_test(the_test)
   case result.error {
     None -> io.print(ansi.green("."))
     Some(error) -> {
       io.println(ansi.red("F"))
-      io.println(internal.print_error(error, test.module_path, test.name))
+      io.println(internal.print_error(error, the_test.module_path, the_test.name,
+      ))
     }
   }
   result
