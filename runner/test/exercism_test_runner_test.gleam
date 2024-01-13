@@ -73,10 +73,10 @@ pub fn print_unequal_test() {
   |> internal.print_error("src/wibble.gleam", "wobble_test")
   |> should.equal(
     "src/wibble.gleam
-\e[36m   test: \e[39mwobble_test
-\e[36m  error: \e[39mleft != right
-\e[36m   left: \e[39m\"ab\"
-\e[36m  right: \e[39m\"ab\e[1m\e[31mc\e[39m\e[22m\"",
+\u{001b}[36m   test: \u{001b}[39mwobble_test
+\u{001b}[36m  error: \u{001b}[39mleft != right
+\u{001b}[36m   left: \u{001b}[39m\"ab\"
+\u{001b}[36m  right: \u{001b}[39m\"ab\u{001b}[1m\u{001b}[31mc\u{001b}[39m\u{001b}[22m\"",
   )
 }
 
@@ -85,10 +85,10 @@ pub fn print_todo_test() {
   |> internal.print_error("src/wibble.gleam", "wobble_test")
   |> should.equal(
     "src/wibble.gleam
-\e[36m   test: \e[39mwobble_test
-\e[36m  error: \e[39mtodo
-\e[36m   site: \e[39mmy/mod:12
-\e[36m   info: \e[39mok",
+\u{001b}[36m   test: \u{001b}[39mwobble_test
+\u{001b}[36m  error: \u{001b}[39mtodo
+\u{001b}[36m   site: \u{001b}[39mmy/mod:12
+\u{001b}[36m   info: \u{001b}[39mok",
   )
 }
 
@@ -97,10 +97,10 @@ pub fn print_panic_test() {
   |> internal.print_error("src/wibble.gleam", "wobble_test")
   |> should.equal(
     "src/wibble.gleam
-\e[36m   test: \e[39mwobble_test
-\e[36m  error: \e[39mpanic
-\e[36m   site: \e[39mthe/mod:14
-\e[36m   info: \e[39mah!",
+\u{001b}[36m   test: \u{001b}[39mwobble_test
+\u{001b}[36m  error: \u{001b}[39mpanic
+\u{001b}[36m   site: \u{001b}[39mthe/mod:14
+\u{001b}[36m   info: \u{001b}[39mah!",
   )
 }
 
@@ -109,9 +109,9 @@ pub fn print_crashed_test() {
   |> internal.print_error("src/wibble.gleam", "wobble_test")
   |> should.equal(
     "src/wibble.gleam
-\e[36m   test: \e[39mwobble_test
-\e[36m  error: \e[39mProgram crashed
-\e[36m  cause: \e[39mError(Nil)",
+\u{001b}[36m   test: \u{001b}[39mwobble_test
+\u{001b}[36m  error: \u{001b}[39mProgram crashed
+\u{001b}[36m  cause: \u{001b}[39mError(Nil)",
   )
 }
 
@@ -120,10 +120,10 @@ pub fn print_unmatched_test() {
   |> internal.print_error("src/wibble.gleam", "wobble_test")
   |> should.equal(
     "src/wibble.gleam
-\e[36m   test: \e[39mwobble_test
-\e[36m  error: \e[39mPattern match failed
-\e[36m   site: \e[39msome/mod:214
-\e[36m  value: \e[39mOk(1)",
+\u{001b}[36m   test: \u{001b}[39mwobble_test
+\u{001b}[36m  error: \u{001b}[39mPattern match failed
+\u{001b}[36m   site: \u{001b}[39msome/mod:214
+\u{001b}[36m  value: \u{001b}[39mOk(1)",
   )
 }
 
@@ -132,9 +132,9 @@ pub fn print_unmatched_case_test() {
   |> internal.print_error("src/wibble.gleam", "wobble_test")
   |> should.equal(
     "src/wibble.gleam
-\e[36m   test: \e[39mwobble_test
-\e[36m  error: \e[39mPattern match failed
-\e[36m  value: \e[39mOk(1)",
+\u{001b}[36m   test: \u{001b}[39mwobble_test
+\u{001b}[36m  error: \u{001b}[39mPattern match failed
+\u{001b}[36m  value: \u{001b}[39mOk(1)",
   )
 }
 
@@ -152,7 +152,7 @@ pub fn print_summary_passed_test() {
     internal.TestResult(test, None, ""),
   ]
   |> internal.print_summary
-  |> should.equal(#(True, "\e[32mRan 3 tests, 0 failed\e[39m"))
+  |> should.equal(#(True, "\u{001b}[32mRan 3 tests, 0 failed\u{001b}[39m"))
 }
 
 pub fn print_summary_failed_test() {
@@ -169,7 +169,7 @@ pub fn print_summary_failed_test() {
     internal.TestResult(test, None, ""),
   ]
   |> internal.print_summary
-  |> should.equal(#(False, "\e[31mRan 3 tests, 1 failed\e[39m"))
+  |> should.equal(#(False, "\u{001b}[31mRan 3 tests, 1 failed\u{001b}[39m"))
 }
 
 pub fn run_test_test() {
@@ -213,26 +213,30 @@ pub fn results_to_json_pass_test() {
     ),
   ]
   |> internal.results_to_json
-  |> should.equal(json.to_string(json.object([
-    #("version", json.int(2)),
-    #("status", json.string("pass")),
-    #(
-      "tests",
-      json.preprocessed_array([
-        json.object([
-          #("name", json.string("one_test")),
-          #("test_code", json.string("src1")),
-          #("output", json.string("One two three!")),
-          #("status", json.string("pass")),
-        ]),
-        json.object([
-          #("name", json.string("two_test")),
-          #("test_code", json.string("src2")),
-          #("status", json.string("pass")),
-        ]),
+  |> should.equal(
+    json.to_string(
+      json.object([
+        #("version", json.int(2)),
+        #("status", json.string("pass")),
+        #(
+          "tests",
+          json.preprocessed_array([
+            json.object([
+              #("name", json.string("one_test")),
+              #("test_code", json.string("src1")),
+              #("output", json.string("One two three!")),
+              #("status", json.string("pass")),
+            ]),
+            json.object([
+              #("name", json.string("two_test")),
+              #("test_code", json.string("src2")),
+              #("status", json.string("pass")),
+            ]),
+          ]),
+        ),
       ]),
     ),
-  ])))
+  )
 }
 
 pub fn results_to_json_failed_test() {
@@ -259,40 +263,45 @@ pub fn results_to_json_failed_test() {
     ),
   ]
   |> internal.results_to_json
-  |> should.equal(json.to_string(json.object([
-    #("version", json.int(2)),
-    #("status", json.string("fail")),
-    #(
-      "tests",
-      json.preprocessed_array([
-        json.object([
-          #("name", json.string("one_test")),
-          #("test_code", json.string("src1")),
-          #("output", json.string("One two three!")),
-          #("status", json.string("fail")),
-          #(
-            "message",
-            json.string(internal.print_error(
-              internal.Todo("todo", "wibble", 12),
-              "src/wibble.gleam",
-              "one_test",
-            )),
-          ),
-        ]),
-        json.object([
-          #("name", json.string("two_test")),
-          #("test_code", json.string("src2")),
-          #("status", json.string("pass")),
-        ]),
+  |> should.equal(
+    json.to_string(
+      json.object([
+        #("version", json.int(2)),
+        #("status", json.string("fail")),
+        #(
+          "tests",
+          json.preprocessed_array([
+            json.object([
+              #("name", json.string("one_test")),
+              #("test_code", json.string("src1")),
+              #("output", json.string("One two three!")),
+              #("status", json.string("fail")),
+              #(
+                "message",
+                json.string(internal.print_error(
+                  internal.Todo("todo", "wibble", 12),
+                  "src/wibble.gleam",
+                  "one_test",
+                )),
+              ),
+            ]),
+            json.object([
+              #("name", json.string("two_test")),
+              #("test_code", json.string("src2")),
+              #("status", json.string("pass")),
+            ]),
+          ]),
+        ),
       ]),
     ),
-  ])))
+  )
 }
 
 pub fn results_to_json_long_output_test() {
   let output = string.repeat("a", 1000)
   let expected =
-    string.repeat("a", 448) <> "...
+    string.repeat("a", 448)
+    <> "...
 
 Output was truncated. Please limit to 500 chars"
 
@@ -309,21 +318,25 @@ Output was truncated. Please limit to 500 chars"
     ),
   ]
   |> internal.results_to_json
-  |> should.equal(json.to_string(json.object([
-    #("version", json.int(2)),
-    #("status", json.string("pass")),
-    #(
-      "tests",
-      json.preprocessed_array([
-        json.object([
-          #("name", json.string("one_test")),
-          #("test_code", json.string("src1")),
-          #("output", json.string(expected)),
-          #("status", json.string("pass")),
-        ]),
+  |> should.equal(
+    json.to_string(
+      json.object([
+        #("version", json.int(2)),
+        #("status", json.string("pass")),
+        #(
+          "tests",
+          json.preprocessed_array([
+            json.object([
+              #("name", json.string("one_test")),
+              #("test_code", json.string("src1")),
+              #("output", json.string(expected)),
+              #("status", json.string("pass")),
+            ]),
+          ]),
+        ),
       ]),
     ),
-  ])))
+  )
 }
 
 // https://github.com/exercism/gleam-test-runner/issues/23
