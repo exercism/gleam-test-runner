@@ -21,7 +21,7 @@ pub type Error {
 }
 
 pub type Suite {
-  Suite(name: String, path: String, tests: List(the_test))
+  Suite(name: String, path: String, tests: List(Test))
 }
 
 pub type Test {
@@ -339,7 +339,7 @@ pub fn run_test(the_test: Test) -> TestResult {
     Ok(_) -> None
     Error(error) -> Some(error)
   }
-  TestResult(the_test: test, error: error, output: get_output())
+  TestResult(the_test: the_test, error: error, output: get_output())
 }
 
 pub fn results_to_json(results: List(TestResult)) -> String {
