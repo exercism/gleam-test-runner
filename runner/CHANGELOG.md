@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.7.0 - Unreleased
+
+- Updated for latest Gleam
+
+## v1.6.0 - 2023-11-15
+
+- Updated for latest Simplifile.
+
 ## v1.5.0 - 2023-11-07
 
 - Updated for Gleam v0.32.0.
