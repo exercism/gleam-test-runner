@@ -139,7 +139,7 @@ pub fn print_unmatched_case_test() {
 }
 
 pub fn print_summary_passed_test() {
-  let test =
+  let testcase =
     internal.Test(
       module_path: "src/wibble.gleam",
       name: "one_test",
@@ -147,16 +147,16 @@ pub fn print_summary_passed_test() {
       src: "",
     )
   [
-    internal.TestResult(test, None, ""),
-    internal.TestResult(test, None, ""),
-    internal.TestResult(test, None, ""),
+    internal.TestResult(testcase, None, ""),
+    internal.TestResult(testcase, None, ""),
+    internal.TestResult(testcase, None, ""),
   ]
   |> internal.print_summary
   |> should.equal(#(True, "\u{001b}[32mRan 3 tests, 0 failed\u{001b}[39m"))
 }
 
 pub fn print_summary_failed_test() {
-  let test =
+  let testcase =
     internal.Test(
       module_path: "src/wibble.gleam",
       name: "one_test",
@@ -164,16 +164,16 @@ pub fn print_summary_failed_test() {
       src: "",
     )
   [
-    internal.TestResult(test, Some(internal.Todo("", "", 0)), ""),
-    internal.TestResult(test, None, ""),
-    internal.TestResult(test, None, ""),
+    internal.TestResult(testcase, Some(internal.Todo("", "", 0)), ""),
+    internal.TestResult(testcase, None, ""),
+    internal.TestResult(testcase, None, ""),
   ]
   |> internal.print_summary
   |> should.equal(#(False, "\u{001b}[31mRan 3 tests, 1 failed\u{001b}[39m"))
 }
 
 pub fn run_test_test() {
-  let test =
+  let testcase =
     internal.Test(
       module_path: "src/wibble.gleam",
       name: "one_test",
@@ -184,9 +184,9 @@ pub fn run_test_test() {
       },
       src: "",
     )
-  test
+  testcase
   |> internal.run_test
-  |> should.equal(internal.TestResult(test, None, "[1, 2]\nOk(Nil)\n"))
+  |> should.equal(internal.TestResult(testcase, None, "[1, 2]\nOk(Nil)\n"))
 }
 
 pub fn results_to_json_pass_test() {
@@ -299,9 +299,7 @@ pub fn results_to_json_failed_test() {
 
 pub fn results_to_json_long_output_test() {
   let output = string.repeat("a", 1000)
-  let expected =
-    string.repeat("a", 448)
-    <> "...
+  let expected = string.repeat("a", 448) <> "...
 
 Output was truncated. Please limit to 500 chars"
 

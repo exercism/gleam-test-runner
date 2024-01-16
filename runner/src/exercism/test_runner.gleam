@@ -1,11 +1,11 @@
 // TODO: Get and show stacktrace
+import argv
 import gleam/io
 import gleam/list
 import gleam/bool
 import gleam/string
 import gleam/option.{None, Some}
 import gleam/dynamic.{type Dynamic}
-import gleam/erlang
 import gleam/erlang/atom.{type Atom}
 import gleam/erlang/charlist.{type Charlist}
 import simplifile
@@ -22,7 +22,7 @@ pub fn main() {
   let #(passed, message) = internal.print_summary(results)
   io.println("\n" <> message)
 
-  let assert Ok(_) = case erlang.start_arguments() {
+  let assert Ok(_) = case argv.load().arguments {
     ["--json-output-path=" <> path] | ["--json-output-path", path] -> {
       let json = internal.results_to_json(results)
       simplifile.write(path, json)
@@ -51,7 +51,10 @@ fn run_test(the_test: Test) -> TestResult {
     None -> io.print(ansi.green("."))
     Some(error) -> {
       io.println(ansi.red("F"))
-      io.println(internal.print_error(error, the_test.module_path, the_test.name,
+      io.println(internal.print_error(
+        error,
+        the_test.module_path,
+        the_test.name,
       ))
     }
   }

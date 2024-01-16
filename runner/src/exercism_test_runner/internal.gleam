@@ -115,57 +115,42 @@ pub fn print_error(error: Error, path: String, test_name: String) -> String {
       ])
     }
     Todo(message, module, line) -> {
-      print_properties(
-        path,
-        [
-          #("test", test_name),
-          #("error", "todo"),
-          #("site", module <> ":" <> int.to_string(line)),
-          #("info", message),
-        ],
-      )
+      print_properties(path, [
+        #("test", test_name),
+        #("error", "todo"),
+        #("site", module <> ":" <> int.to_string(line)),
+        #("info", message),
+      ])
     }
     Panic(message, module, line) -> {
-      print_properties(
-        path,
-        [
-          #("test", test_name),
-          #("error", "panic"),
-          #("site", module <> ":" <> int.to_string(line)),
-          #("info", message),
-        ],
-      )
+      print_properties(path, [
+        #("test", test_name),
+        #("error", "panic"),
+        #("site", module <> ":" <> int.to_string(line)),
+        #("info", message),
+      ])
     }
     Unmatched(value, module, line) -> {
-      print_properties(
-        path,
-        [
-          #("test", test_name),
-          #("error", "Pattern match failed"),
-          #("site", module <> ":" <> int.to_string(line)),
-          #("value", string.inspect(value)),
-        ],
-      )
+      print_properties(path, [
+        #("test", test_name),
+        #("error", "Pattern match failed"),
+        #("site", module <> ":" <> int.to_string(line)),
+        #("value", string.inspect(value)),
+      ])
     }
     UnmatchedCase(value) -> {
-      print_properties(
-        path,
-        [
-          #("test", test_name),
-          #("error", "Pattern match failed"),
-          #("value", string.inspect(value)),
-        ],
-      )
+      print_properties(path, [
+        #("test", test_name),
+        #("error", "Pattern match failed"),
+        #("value", string.inspect(value)),
+      ])
     }
     Crashed(error) -> {
-      print_properties(
-        path,
-        [
-          #("test", test_name),
-          #("error", "Program crashed"),
-          #("cause", string.inspect(error)),
-        ],
-      )
+      print_properties(path, [
+        #("test", test_name),
+        #("error", "Program crashed"),
+        #("cause", string.inspect(error)),
+      ])
     }
   }
 }
@@ -221,10 +206,10 @@ fn decode_pattern_match_failed_error(
   let decoder =
     dynamic.decode4(
       fn(_, value, module, line) { Unmatched(value, module, line) },
-      dynamic.field(
-        atom.create_from_string("gleam_error"),
-        decode_tag(atom.create_from_string("let_assert"), _),
-      ),
+      dynamic.field(atom.create_from_string("gleam_error"), decode_tag(
+        atom.create_from_string("let_assert"),
+        _,
+      )),
       dynamic.field(atom.create_from_string("value"), Ok),
       dynamic.field(atom.create_from_string("module"), dynamic.string),
       dynamic.field(atom.create_from_string("line"), dynamic.int),
@@ -239,10 +224,10 @@ fn decode_todo_error(error: Dynamic) -> Result(Error, dynamic.DecodeErrors) {
   let decoder =
     dynamic.decode4(
       fn(_, message, module, line) { Todo(message, module, line) },
-      dynamic.field(
-        atom.create_from_string("gleam_error"),
-        decode_tag(atom.create_from_string("todo"), _),
-      ),
+      dynamic.field(atom.create_from_string("gleam_error"), decode_tag(
+        atom.create_from_string("todo"),
+        _,
+      )),
       dynamic.field(atom.create_from_string("message"), dynamic.string),
       dynamic.field(atom.create_from_string("module"), dynamic.string),
       dynamic.field(atom.create_from_string("line"), dynamic.int),
@@ -254,10 +239,10 @@ fn decode_panic_error(error: Dynamic) -> Result(Error, dynamic.DecodeErrors) {
   let decoder =
     dynamic.decode4(
       fn(_, message, module, line) { Panic(message, module, line) },
-      dynamic.field(
-        atom.create_from_string("gleam_error"),
-        decode_tag(atom.create_from_string("panic"), _),
-      ),
+      dynamic.field(atom.create_from_string("gleam_error"), decode_tag(
+        atom.create_from_string("panic"),
+        _,
+      )),
       dynamic.field(atom.create_from_string("message"), dynamic.string),
       dynamic.field(atom.create_from_string("module"), dynamic.string),
       dynamic.field(atom.create_from_string("line"), dynamic.int),
@@ -359,7 +344,8 @@ pub fn results_to_json(results: List(TestResult)) -> String {
 fn test_result_json(result: TestResult) -> Json {
   let fields = case result.error {
     Some(error) -> {
-      let error = print_error(error, result.the_test.module_path, result.the_test.name)
+      let error =
+        print_error(error, result.the_test.module_path, result.the_test.name)
       [#("status", json.string("fail")), #("message", json.string(error))]
     }
     None -> [#("status", json.string("pass"))]
