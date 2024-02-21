@@ -1,4 +1,4 @@
-FROM ghcr.io/gleam-lang/gleam:v0.34.0-erlang-alpine
+FROM ghcr.io/gleam-lang/gleam:v1.0.0-rc2-erlang-alpine
 
 # Install packages required to run the tests
 RUN apk add --no-cache jq coreutils
