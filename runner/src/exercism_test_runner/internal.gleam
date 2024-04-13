@@ -84,19 +84,20 @@ pub fn print_error(error: Error, path: String, test_name: String) -> String {
   case error {
     Unequal(left, right) -> {
       let #(left_colored, right_colored) = case
-        #(dynamic.bool(left), dynamic.bool(right))
+        dynamic.bool(left),
+        dynamic.bool(right)
       {
-        #(Ok(left_bool), Ok(right_bool)) -> #(
+        Ok(left_bool), Ok(right_bool) -> #(
           left_bool
-          |> string.inspect()
-          |> ansi.green()
-          |> ansi.bold(),
+            |> string.inspect()
+            |> ansi.green()
+            |> ansi.bold(),
           right_bool
-          |> string.inspect()
-          |> ansi.red()
-          |> ansi.bold(),
+            |> string.inspect()
+            |> ansi.red()
+            |> ansi.bold(),
         )
-        _ -> {
+        _, _ -> {
           let diff =
             gap.to_styled(gap.compare_strings(
               string.inspect(left),
