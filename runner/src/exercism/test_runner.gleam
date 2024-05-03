@@ -17,6 +17,11 @@ import gleam_community/ansi
 
 pub fn main() {
   let assert Ok(files) = read_directory("test")
+  let files =
+    list.map(files, charlist.to_string)
+    |> list.filter(fn(file) {
+      string.ends_with(file, "test.gleam") && !string.starts_with(file, ".")
+    })
   let suites = list.map(files, read_module)
   let results = list.flat_map(suites, run_suite)
   let #(passed, message) = internal.print_summary(results)
@@ -67,8 +72,7 @@ fn read_directory(a: String) -> Result(List(Charlist), Dynamic)
 @external(erlang, "gleam_stdlib", "identity")
 fn atom_to_module(a: Atom) -> BeamModule
 
-fn read_module(filename: Charlist) -> Suite {
-  let filename = charlist.to_string(filename)
+fn read_module(filename: String) -> Suite {
   let name = string.drop_right(filename, 6)
   let path = "test/" <> filename
   let assert Ok(src) = simplifile.read(path)
