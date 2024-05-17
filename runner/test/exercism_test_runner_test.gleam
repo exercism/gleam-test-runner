@@ -1,10 +1,10 @@
-import gleam/json
-import gleam/string
-import gleam/dynamic
-import gleam/option.{None, Some}
-import exercism/test_runner
 import exercism/should
+import exercism/test_runner
 import exercism_test_runner/internal
+import gleam/dynamic
+import gleam/json
+import gleam/option.{None, Some}
+import gleam/string
 
 pub fn main() {
   test_runner.main()
@@ -179,7 +179,7 @@ pub fn run_test_test() {
       name: "one_test",
       function: fn() {
         test_runner.debug([1, 2])
-        test_runner.debug(Ok(Nil))
+        let _ = test_runner.debug(Ok(Nil))
         Ok(Nil)
       },
       src: "",

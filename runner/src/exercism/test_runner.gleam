@@ -1,19 +1,19 @@
 // TODO: Get and show stacktrace
 import argv
-import gleam/io
-import gleam/list
-import gleam/bool
-import gleam/string
-import gleam/option.{None, Some}
-import gleam/dynamic.{type Dynamic}
-import gleam/erlang/atom.{type Atom}
-import gleam/erlang/charlist.{type Charlist}
-import simplifile
-import glance
 import exercism_test_runner/internal.{
   type Suite, type Test, type TestResult, Suite, Test,
 }
+import glance
+import gleam/bool
+import gleam/dynamic.{type Dynamic}
+import gleam/erlang/atom.{type Atom}
+import gleam/erlang/charlist.{type Charlist}
+import gleam/io
+import gleam/list
+import gleam/option.{None, Some}
+import gleam/string
 import gleam_community/ansi
+import simplifile
 
 pub fn main() {
   let assert Ok(files) = read_directory("test")
