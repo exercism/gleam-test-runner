@@ -1,14 +1,14 @@
 import gap
-import gleam/int
-import gleam/json.{type Json}
-import gleam/list
-import gleam/result
-import gleam/string
-import gleam/option.{type Option, None, Some}
 import gleam/bit_array
 import gleam/dynamic.{type Dynamic}
 import gleam/erlang
 import gleam/erlang/atom
+import gleam/int
+import gleam/json.{type Json}
+import gleam/list
+import gleam/option.{type Option, None, Some}
+import gleam/result
+import gleam/string
 import gleam_community/ansi
 
 pub type Error {
