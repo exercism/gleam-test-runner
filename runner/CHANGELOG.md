@@ -1,6 +1,10 @@
 # Changelog
 
-## v1.7.0 - Unreleased
+## v1.8.0 - 2024-01-16
+
+- Updated for latest Gleam
+
+## v1.7.0 - 2024-01-16
 
 - Updated for latest Gleam
 
