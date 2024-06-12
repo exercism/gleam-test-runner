@@ -1,6 +1,6 @@
-import empty_file
-import exercism/should
 import exercism/test_runner
+import exercism/should
+import empty_file
 
 pub fn main() {
   test_runner.main()
