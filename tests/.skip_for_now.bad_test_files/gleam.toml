@@ -1,0 +1,9 @@
+name = "bad_test_files"
+version = "0.1.0"
+
+[dependencies]
+gleam_stdlib = "~> 0.26"
+
+[dev-dependencies]
+exercism_test_runner = "~> 1.0"
+
