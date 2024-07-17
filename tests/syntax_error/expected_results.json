@@ -1,5 +1,5 @@
 {
   "version": 2,
   "status": "error",
-  "message": "error: Syntax error\n  ┌─ src/syntax_error.gleam:5:1\n  │\n5 │ }\n  │ ^ I was not expecting this\nExpected one of: \n\"]\""
+  "message": "error: Syntax error\n  ┌─ src/syntax_error.gleam:5:1\n  │\n5 │ }\n  │ ^ I was not expecting this\nFound `}`, expected one of: \n- `]`"
 }
