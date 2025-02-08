@@ -1,5 +1,8 @@
 # Changelog
 
+## v1.9.0 - 2025-02-08
+
+- Updated for latest Gleam
 ## v1.8.0 - 2024-01-16
 
 - Updated for latest Gleam
