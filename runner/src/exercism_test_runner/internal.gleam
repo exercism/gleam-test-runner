@@ -44,7 +44,7 @@ pub fn extract_function_body(src: String, start: Int, end: Int) -> String {
   |> result.unwrap(<<>>)
   |> bit_array.to_string
   |> result.unwrap("")
-  |> string.drop_right(1)
+  |> string.drop_end(1)
   |> drop_function_header
   |> string.trim
   |> string.split("\n")
@@ -62,7 +62,7 @@ fn drop_function_header(src: String) -> String {
 
 fn undent(line: String) -> String {
   case string.starts_with(line, "  ") {
-    True -> string.drop_left(line, 2)
+    True -> string.drop_start(line, 2)
     False -> line
   }
 }
@@ -73,7 +73,7 @@ fn print_properties(
 ) -> String {
   properties
   |> list.map(fn(pair) {
-    let key = string.pad_left(pair.0, 7, " ") <> ": "
+    let key = string.pad_start(pair.0, 7, " ") <> ": "
     ansi.cyan(key) <> pair.1
   })
   |> list.prepend(header)
