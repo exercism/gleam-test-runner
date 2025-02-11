@@ -71,7 +71,7 @@ cp "${manifest_file}" "${manifest_file_bak}"
 cp "${gleam_file}" "${gleam_file_bak}"
 rm -fr "$solution_dir"/build
 cat "$root_dir"/packages/manifest.toml |
-  sed "s|{ name = \"exercism_test_runner\", version = \"\([0-9.]*\)\", build_tools = \[\"gleam\"\], requirements = \[\(.*\)\], otp_app = \"exercism_test_runner\", .*}|{ name = \"exercism_test_runner\", version = \"\1\", build_tools = [\"gleam\"], requirements = [\2], source = \"local\", path = \"${root_dir}/runner\" }|" |
+  sed "s|{ name = \"exercism_test_runner\", version = \"\([0-9.]*\)\", build_tools = \[\"gleam\"\], requirements = \[\(.*\)\].*}|{ name = \"exercism_test_runner\", version = \"\1\", build_tools = [\"gleam\"], requirements = [\2], source = \"local\", path = \"${root_dir}/runner\" }|" |
   sed "s|exercism_test_runner = .*|exercism_test_runner = { path = \"${root_dir}/runner\" }|" >"${manifest_file}"
 cat "$root_dir"/packages/gleam.toml |
   sed "s/name = \".*\"/name = \"$underscore_slug\"/" |
