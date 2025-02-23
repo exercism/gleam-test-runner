@@ -24,9 +24,7 @@ for test_dir in tests/*; do
 
   echo "${test_dir_name}: testing..."
   rm -f "${results_file_path}"
-  # uncomment if you want to run the tests agains the local version of the runner
-  # bin/run-local-runner.sh "${test_dir_name}" "${test_dir_path}" "${test_dir_path}" > /dev/null
-  bin/run.sh "${test_dir_name}" "${test_dir_path}" "${test_dir_path}" >/dev/null
+  bin/run.sh "${test_dir_name}" "${test_dir_path}" "${test_dir_path}" > /dev/null
 
   if cat "${results_file_path}" | jq . | diff - "${expected_results_file_path}"
   then
