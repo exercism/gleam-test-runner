@@ -1,6 +1,7 @@
 import gap
 import gleam/bit_array
-import gleam/dynamic.{type Dynamic}
+import gleam/dynamic
+import gleam/dynamic/decode.{type Decoder, type Dynamic}
 import gleam/erlang
 import gleam/erlang/atom
 import gleam/int
@@ -84,8 +85,8 @@ pub fn print_error(error: Error, path: String, test_name: String) -> String {
   case error {
     Unequal(left, right) -> {
       let #(left_colored, right_colored) = case
-        dynamic.bool(left),
-        dynamic.bool(right)
+        decode.run(left, decode.bool),
+        decode.run(right, decode.bool)
       {
         Ok(left_bool), Ok(right_bool) -> #(
           left_bool
@@ -187,99 +188,75 @@ fn convert_error(error: erlang.Crash) -> Error {
     erlang.Exited(error) -> Crashed(error)
     erlang.Thrown(error) -> Crashed(error)
     erlang.Errored(error) -> {
-      let decoders = [
-        decode_unequal_error,
-        decode_pattern_match_failed_error,
-        decode_case_clause_error,
-        decode_todo_error,
-        decode_panic_error,
-      ]
+      let decoders =
+        decode.one_of(decode_unequal_error(), [
+          decode_pattern_match_failed_error(),
+          decode_case_clause_error(),
+          decode_todo_error(),
+          decode_panic_error(),
+        ])
+
       error
-      |> dynamic.any(decoders)
+      |> decode.run(decoders)
       |> result.unwrap(Crashed(error))
     }
   }
 }
 
-fn decode_pattern_match_failed_error(
-  error: Dynamic,
-) -> Result(Error, dynamic.DecodeErrors) {
-  let decoder =
-    dynamic.decode4(
-      fn(_, value, module, line) { Unmatched(value, module, line) },
-      dynamic.field(atom.create_from_string("gleam_error"), decode_tag(
-        atom.create_from_string("let_assert"),
-        _,
-      )),
-      dynamic.field(atom.create_from_string("value"), Ok),
-      dynamic.field(atom.create_from_string("module"), dynamic.string),
-      dynamic.field(atom.create_from_string("line"), dynamic.int),
-    )
-  decoder(error)
+fn decode_pattern_match_failed_error() -> Decoder(Error) {
+  use _ <- decode.field(
+    atom.create_from_string("gleam_error"),
+    decode_tag(atom.create_from_string("let_assert")),
+  )
+  use value <- decode.field(atom.create_from_string("value"), decode.dynamic)
+  use module <- decode.field(atom.create_from_string("module"), decode.string)
+  use line <- decode.field(atom.create_from_string("line"), decode.int)
+  decode.success(Unmatched(value, module, line))
 }
 
-import gleam/io
-
-fn decode_todo_error(error: Dynamic) -> Result(Error, dynamic.DecodeErrors) {
-  io.debug(error)
-  let decoder =
-    dynamic.decode4(
-      fn(_, message, module, line) { Todo(message, module, line) },
-      dynamic.field(atom.create_from_string("gleam_error"), decode_tag(
-        atom.create_from_string("todo"),
-        _,
-      )),
-      dynamic.field(atom.create_from_string("message"), dynamic.string),
-      dynamic.field(atom.create_from_string("module"), dynamic.string),
-      dynamic.field(atom.create_from_string("line"), dynamic.int),
-    )
-  decoder(error)
+fn decode_todo_error() -> Decoder(Error) {
+  use _ <- decode.field(
+    atom.create_from_string("gleam_error"),
+    decode_tag(atom.create_from_string("todo")),
+  )
+  use message <- decode.field(atom.create_from_string("message"), decode.string)
+  use module <- decode.field(atom.create_from_string("module"), decode.string)
+  use line <- decode.field(atom.create_from_string("line"), decode.int)
+  decode.success(Todo(message, module, line))
 }
 
-fn decode_panic_error(error: Dynamic) -> Result(Error, dynamic.DecodeErrors) {
-  let decoder =
-    dynamic.decode4(
-      fn(_, message, module, line) { Panic(message, module, line) },
-      dynamic.field(atom.create_from_string("gleam_error"), decode_tag(
-        atom.create_from_string("panic"),
-        _,
-      )),
-      dynamic.field(atom.create_from_string("message"), dynamic.string),
-      dynamic.field(atom.create_from_string("module"), dynamic.string),
-      dynamic.field(atom.create_from_string("line"), dynamic.int),
-    )
-  decoder(error)
+fn decode_panic_error() -> Decoder(Error) {
+  use _ <- decode.field(
+    atom.create_from_string("gleam_error"),
+    decode_tag(atom.create_from_string("panic")),
+  )
+  use message <- decode.field(atom.create_from_string("message"), decode.string)
+  use module <- decode.field(atom.create_from_string("module"), decode.string)
+  use line <- decode.field(atom.create_from_string("line"), decode.int)
+  decode.success(Panic(message, module, line))
 }
 
-fn decode_case_clause_error(
-  error: Dynamic,
-) -> Result(Error, dynamic.DecodeErrors) {
-  let decoder =
-    dynamic.decode2(
-      fn(_, value) { UnmatchedCase(value) },
-      dynamic.element(0, decode_tag(atom.create_from_string("case_clause"), _)),
-      dynamic.element(1, Ok),
-    )
-  decoder(error)
+fn decode_case_clause_error() -> Decoder(Error) {
+  use _ <- decode.field(0, decode_tag(atom.create_from_string("case_clause")))
+  use value <- decode.field(1, decode.dynamic)
+  decode.success(UnmatchedCase(value))
 }
 
-fn decode_unequal_error(error: Dynamic) -> Result(Error, dynamic.DecodeErrors) {
+fn decode_unequal_error() -> Decoder(Error) {
   let tag = atom.create_from_string("unequal")
-  let decoder =
-    dynamic.decode3(
-      fn(_, a, b) { Unequal(a, b) },
-      dynamic.element(0, decode_tag(tag, _)),
-      dynamic.element(1, Ok),
-      dynamic.element(2, Ok),
-    )
-  decoder(error)
+  use _ <- decode.field(0, decode_tag(tag))
+  use a <- decode.field(1, decode.dynamic)
+  use b <- decode.field(2, decode.dynamic)
+  decode.success(Unequal(a, b))
 }
 
-fn decode_tag(tag: anything, data: Dynamic) -> Result(Nil, dynamic.DecodeErrors) {
-  case dynamic.from(tag) == data {
-    True -> Ok(Nil)
-    False -> Error([dynamic.DecodeError("Tag", dynamic.classify(data), [])])
-  }
+fn decode_tag(tag: anything) -> Decoder(Nil) {
+  decode.new_primitive_decoder("Tag", fn(data) {
+    case dynamic.from(tag) == data {
+      True -> Ok(Nil)
+      False -> Error(Nil)
+    }
+  })
 }
 
 pub type ProcessDictionaryKey {
@@ -299,7 +276,7 @@ fn process_dictionary_get(a: ProcessDictionaryKey) -> Dynamic
 pub fn append_output(value: String) -> Nil {
   ExecismTestRunnerUserOutput
   |> process_dictionary_get
-  |> dynamic.string()
+  |> decode.run(decode.string)
   |> result.unwrap("")
   |> string.append(value)
   |> string.append("\n")
@@ -315,7 +292,7 @@ pub fn clear_output() -> Nil {
 pub fn get_output() -> String {
   ExecismTestRunnerUserOutput
   |> process_dictionary_get
-  |> dynamic.string()
+  |> decode.run(decode.string)
   |> result.unwrap("")
 }
 
