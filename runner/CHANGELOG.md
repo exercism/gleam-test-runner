@@ -1,9 +1,11 @@
 # Changelog
 
-## v1.9.0 - 2025-02-08
+## v1.9.0 - 2025-03-09
 
 - Updated for latest Gleam
 - Updated for Gleam stdlib
+- Updated to  latest gleam_community_ansi
+- Use gleam/dynamic/decode for decoding
 
 ## v1.8.0 - 2024-01-16
 
