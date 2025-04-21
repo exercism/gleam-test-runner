@@ -69,7 +69,7 @@ fn atom_to_module(a: Atom) -> BeamModule
 
 fn read_module(filename: Charlist) -> Suite {
   let filename = charlist.to_string(filename)
-  let name = string.drop_right(filename, 6)
+  let name = string.drop_end(filename, 6)
   let path = "test/" <> filename
   let assert Ok(src) = simplifile.read(path)
   let assert Ok(ast) = glance.module(src)
