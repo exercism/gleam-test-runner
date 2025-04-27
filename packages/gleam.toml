@@ -11,5 +11,4 @@ gleam_regexp = ">= 1.1.0 and < 2.0.0"
 gleam_deque = ">= 1.0.0 and < 2.0.0"
 
 [dev-dependencies]
-# TODO: reset to version 1.9.0
-exercism_test_runner = { path = "../runner/"}
+exercism_test_runner = "~> 1.9"
