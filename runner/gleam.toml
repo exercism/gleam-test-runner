@@ -4,7 +4,7 @@ description = "A test framework for Gleam exercises on Exercism"
 licences = ["Apache-2.0"]
 repository = { type = "github", user = "exercism", repo = "gleam-test-runner" }
 links = [{ title = "Website", href = "https://exercism.org/tracks/gleam" }]
-gleam = ">= 0.32.0"
+gleam = ">= 1.4.0"
 
 [dependencies]
 gap = "~> 1.0"
