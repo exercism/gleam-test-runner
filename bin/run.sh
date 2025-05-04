@@ -77,15 +77,15 @@ cp "${gleam_file}" "${gleam_file_bak}"
 rm -fr "$solution_dir"/build
 cp -r "$root_dir"/packages/build "$solution_dir"/build
 if [[ $local == true ]]; then
-  cat "$root_dir"/packages/manifest.toml |
-    sed "s|{ name = \"exercism_test_runner\", version = \"\([0-9.]*\)\", build_tools = \[\"gleam\"\], requirements = \[\(.*\)\].*}|{ name = \"exercism_test_runner\", version = \"\1\", build_tools = [\"gleam\"], requirements = [\2], source = \"local\", path = \"${root_dir}/runner\" }|" |
-    sed "s|exercism_test_runner = .*|exercism_test_runner = { path = \"${root_dir}/runner\" }|" > "${manifest_file}"
-  cat "$root_dir"/packages/gleam.toml |
-    sed "s/name = \".*\"/name = \"$underscore_slug\"/" |
-    sed "s|exercism_test_runner = .*|exercism_test_runner = { path = \"${root_dir}/runner\" }|" > "${gleam_file}"
+  sed "s|{ name = \"exercism_test_runner\", version = \"\([0-9.]*\)\", build_tools = \[\"gleam\"\], requirements = \[\(.*\)\].*}|{ name = \"exercism_test_runner\", version = \"\1\", build_tools = [\"gleam\"], requirements = [\2], source = \"local\", path = \"${root_dir}/runner\" }|;
+    s|exercism_test_runner = .*|exercism_test_runner = { path = \"${root_dir}/runner\" }|" \
+    "$root_dir"/packages/manifest.toml > "${manifest_file}"
+  sed "s/name = \".*\"/name = \"$underscore_slug\"/;
+    s|exercism_test_runner = .*|exercism_test_runner = { path = \"${root_dir}/runner\" }|" \
+    "$root_dir"/packages/gleam.toml  > "${gleam_file}"
 else
   cp "$root_dir"/packages/manifest.toml "${manifest_file}"
-  cat "$root_dir"/packages/gleam.toml | sed "s/name = \".*\"/name = \"$underscore_slug\"/" > "${gleam_file}"
+  sed "s/name = \".*\"/name = \"$underscore_slug\"/" "$root_dir"/packages/gleam.toml > "${gleam_file}"
 fi
 
 trap "mv ${manifest_file_bak} ${manifest_file} && mv ${gleam_file_bak} ${gleam_file}" EXIT
