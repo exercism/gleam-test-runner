@@ -33,7 +33,7 @@ manifest_file="${solution_dir}/manifest.toml"
 manifest_file_bak="${manifest_file}.bak"
 gleam_file="${solution_dir}/gleam.toml"
 gleam_file_bak="${gleam_file}.bak"
-if [[ ${EXERCISM_GLEAM_LOCAL:-""} == "true" ]]; then
+if [[ ${EXERCISM_GLEAM_LOCAL:-} == "true" ]]; then
   local=true
 else
   local=false
@@ -76,16 +76,16 @@ cp "${manifest_file}" "${manifest_file_bak}"
 cp "${gleam_file}" "${gleam_file_bak}"
 rm -fr "$solution_dir"/build
 cp -r "$root_dir"/packages/build "$solution_dir"/build
-if $local; then
+if [[ $local == true ]]; then
   cat "$root_dir"/packages/manifest.toml |
     sed "s|{ name = \"exercism_test_runner\", version = \"\([0-9.]*\)\", build_tools = \[\"gleam\"\], requirements = \[\(.*\)\].*}|{ name = \"exercism_test_runner\", version = \"\1\", build_tools = [\"gleam\"], requirements = [\2], source = \"local\", path = \"${root_dir}/runner\" }|" |
-    sed "s|exercism_test_runner = .*|exercism_test_runner = { path = \"${root_dir}/runner\" }|" >"${manifest_file}"
+    sed "s|exercism_test_runner = .*|exercism_test_runner = { path = \"${root_dir}/runner\" }|" > "${manifest_file}"
   cat "$root_dir"/packages/gleam.toml |
     sed "s/name = \".*\"/name = \"$underscore_slug\"/" |
-    sed "s|exercism_test_runner = .*|exercism_test_runner = { path = \"${root_dir}/runner\" }|" >"${gleam_file}"
+    sed "s|exercism_test_runner = .*|exercism_test_runner = { path = \"${root_dir}/runner\" }|" > "${gleam_file}"
 else
   cp "$root_dir"/packages/manifest.toml "${manifest_file}"
-  cat "$root_dir"/packages/gleam.toml | sed "s/name = \".*\"/name = \"$underscore_slug\"/" >"${gleam_file}"
+  cat "$root_dir"/packages/gleam.toml | sed "s/name = \".*\"/name = \"$underscore_slug\"/" > "${gleam_file}"
 fi
 
 trap "mv ${manifest_file_bak} ${manifest_file} && mv ${gleam_file_bak} ${gleam_file}" EXIT
@@ -100,11 +100,11 @@ cd "${solution_dir}" || exit 1
 
 # Remove the precompiled Erlang files to ensure that they do not get copied and
 # compiled into .BEAM files by the Gleam build tool.
-rm -f build/packages/*/src/*.erl
+rm build/packages/*/src/*.erl
 
 if ! output=$(gleam build 2>&1); then
   output=$(echo "${output}" | sanitise_gleam_output)
-  jq -n --arg output "${output}" '{version: 2, status: "error", message: $output}' >"${results_file}"
+  jq -n --arg output "${output}" '{version: 2, status: "error", message: $output}' > "${results_file}"
   echo "Compilation contained error, see ${output_dir}/results.json"
   exit 0
 fi
