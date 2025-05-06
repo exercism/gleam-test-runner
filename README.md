@@ -53,7 +53,8 @@ When you've made modifications to the code that will result in a new "golden" st
 
 To test modifications made to the test runner locally you can set the environment variable `EXERCISM_GLEAM_LOCAL=true`.
 
-For example to run all tests in docker with the local version of the test runner do the following
+For example to run all tests in docker with the local version of the test runner do the following.
+
 ```sh
 EXERCISM_GLEAM_LOCAL='true' ./bin/run-tests-in-docker.sh
 ```
