@@ -40,6 +40,7 @@ docker run \
     --rm \
     --network none \
     --read-only \
+    --env EXERCISM_GLEAM_LOCAL="${EXERCISM_GLEAM_LOCAL}" \
     --mount type=bind,src="${solution_dir}",dst=/solution \
     --mount type=bind,src="${output_dir}",dst=/output \
     --mount type=tmpfs,dst=/tmp \

@@ -33,6 +33,11 @@ manifest_file="${solution_dir}/manifest.toml"
 manifest_file_bak="${manifest_file}.bak"
 gleam_file="${solution_dir}/gleam.toml"
 gleam_file_bak="${gleam_file}.bak"
+if [[ ${EXERCISM_GLEAM_LOCAL:-} == "true" ]]; then
+  local=true
+else
+  local=false
+fi
 
 remove_unwanted_compiler_lines() {
   grep -vE \
@@ -59,7 +64,6 @@ sanitise_gleam_output() {
   remove_unwanted_compiler_lines | remove_filepath_prefixes | remove_erlang_lines
 }
 
-
 # The container environment does not have network access in order to download
 # dependencies so we copy them from a precompiled Gleam project.
 # The config for this project is also copied to ensure that the build tool does
@@ -72,8 +76,17 @@ cp "${manifest_file}" "${manifest_file_bak}"
 cp "${gleam_file}" "${gleam_file_bak}"
 rm -fr "$solution_dir"/build
 cp -r "$root_dir"/packages/build "$solution_dir"/build
-cp "$root_dir"/packages/manifest.toml "${manifest_file}"
-cat "$root_dir"/packages/gleam.toml | sed "s/name = \".*\"/name = \"$underscore_slug\"/" > "${gleam_file}"
+if [[ $local == true ]]; then
+  sed "s|{ name = \"exercism_test_runner\", version = \"\([0-9.]*\)\", build_tools = \[\"gleam\"\], requirements = \[\(.*\)\].*}|{ name = \"exercism_test_runner\", version = \"\1\", build_tools = [\"gleam\"], requirements = [\2], source = \"local\", path = \"${root_dir}/runner\" }|;
+    s|exercism_test_runner = .*|exercism_test_runner = { path = \"${root_dir}/runner\" }|" \
+    "$root_dir"/packages/manifest.toml > "${manifest_file}"
+  sed "s/name = \".*\"/name = \"$underscore_slug\"/;
+    s|exercism_test_runner = .*|exercism_test_runner = { path = \"${root_dir}/runner\" }|" \
+    "$root_dir"/packages/gleam.toml  > "${gleam_file}"
+else
+  cp "$root_dir"/packages/manifest.toml "${manifest_file}"
+  sed "s/name = \".*\"/name = \"$underscore_slug\"/" "$root_dir"/packages/gleam.toml > "${gleam_file}"
+fi
 
 trap "mv ${manifest_file_bak} ${manifest_file} && mv ${gleam_file_bak} ${gleam_file}" EXIT
 
@@ -89,8 +102,7 @@ cd "${solution_dir}" || exit 1
 # compiled into .BEAM files by the Gleam build tool.
 rm build/packages/*/src/*.erl
 
-if ! output=$(gleam build 2>&1)
-then
+if ! output=$(gleam build 2>&1); then
   output=$(echo "${output}" | sanitise_gleam_output)
   jq -n --arg output "${output}" '{version: 2, status: "error", message: $output}' > "${results_file}"
   echo "Compilation contained error, see ${output_dir}/results.json"
