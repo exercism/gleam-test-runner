@@ -33,7 +33,7 @@ manifest_file="${solution_dir}/manifest.toml"
 manifest_file_bak="${manifest_file}.bak"
 gleam_file="${solution_dir}/gleam.toml"
 gleam_file_bak="${gleam_file}.bak"
-if [[ ${EXERCISM_GLEAM_LOCAL:-} == "true" ]]; then
+if [ "${EXERCISM_GLEAM_LOCAL:-}" = "true" ]; then
   local=true
 else
   local=false
@@ -76,7 +76,7 @@ cp "${manifest_file}" "${manifest_file_bak}"
 cp "${gleam_file}" "${gleam_file_bak}"
 rm -fr "$solution_dir"/build
 cp -r "$root_dir"/packages/build "$solution_dir"/build
-if [[ $local == true ]]; then
+if [ "$local" = "true" ]; then
   sed "s|{ name = \"exercism_test_runner\", version = \"\([0-9.]*\)\", build_tools = \[\"gleam\"\], requirements = \[\(.*\)\].*}|{ name = \"exercism_test_runner\", version = \"\1\", build_tools = [\"gleam\"], requirements = [\2], source = \"local\", path = \"${root_dir}/runner\" }|;
     s|exercism_test_runner = .*|exercism_test_runner = { path = \"${root_dir}/runner\" }|" \
     "$root_dir"/packages/manifest.toml > "${manifest_file}"
