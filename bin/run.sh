@@ -93,8 +93,8 @@ trap "mv ${manifest_file_bak} ${manifest_file} && mv ${gleam_file_bak} ${gleam_f
 # Create the output directory if it doesn't exist
 mkdir -p "${output_dir}"
 
-# Compile the project
-echo "${slug}: compiling..."
+# Compile the project and run the tests
+echo "${slug}: compiling and testing..."
 
 cd "${solution_dir}" || exit 1
 
@@ -102,16 +102,20 @@ cd "${solution_dir}" || exit 1
 # compiled into .BEAM files by the Gleam build tool.
 rm build/packages/*/src/*.erl
 
-if ! output=$(gleam build 2>&1); then
+# `gleam test` builds the project if it needs to before it runs the tests, so a
+# separate `gleam build` step isn't needed. Running one command saves starting
+# the Gleam build tool a second time and its check that the build is up to date.
+# The tests write the results file. If compilation fails, no results file is
+# written and the output holds the compiler error instead.
+rm -f "${results_file}"
+output=$(gleam test -- --json-output-path="$results_file" 2>&1) || true
+echo "${output}"
+
+if [ ! -f "${results_file}" ]; then
   output=$(echo "${output}" | sanitise_gleam_output)
   jq -n --arg output "${output}" '{version: 2, status: "error", message: $output}' > "${results_file}"
   echo "Compilation contained error, see ${output_dir}/results.json"
   exit 0
 fi
-
-echo "${slug}: testing..."
-
-# Run the tests for the provided implementation file.
-gleam test -- --json-output-path="$results_file" 2>&1 || true
 
 echo "${slug}: done"
