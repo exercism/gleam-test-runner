@@ -102,8 +102,9 @@ cd "${solution_dir}" || exit 1
 # compiled into .BEAM files by the Gleam build tool.
 rm build/packages/*/src/*.erl
 
-# `gleam test` compiles the project before it runs the tests, so a separate
-# `gleam build` step would repeat that work and start a second Erlang VM.
+# `gleam test` builds the project if it needs to before it runs the tests, so a
+# separate `gleam build` step isn't needed. Running one command saves starting
+# the Gleam build tool a second time and its check that the build is up to date.
 # The tests write the results file. If compilation fails, no results file is
 # written and the output holds the compiler error instead.
 rm -f "${results_file}"
