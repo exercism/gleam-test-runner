@@ -8,9 +8,13 @@ COPY . .
 
 # Download the used Gleam packages eagerly as the test runner will not have
 # network access to do so. They are also pre-compiled for performance when
-# compiling test projects.
+# compiling test projects. The compiled modules are also copied into one
+# directory, so the Erlang VM searches one directory for each module instead
+# of one per package.
 RUN cd packages \
   && gleam deps download \
-  && gleam build
+  && gleam build \
+  && mkdir ../ebin \
+  && cp build/dev/erlang/*/ebin/* ../ebin/
 
 ENTRYPOINT ["/opt/test-runner/bin/run.sh"]

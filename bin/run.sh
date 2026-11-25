@@ -75,7 +75,6 @@ echo "Copying config and dependencies..."
 cp "${manifest_file}" "${manifest_file_bak}"
 cp "${gleam_file}" "${gleam_file_bak}"
 rm -fr "$solution_dir"/build
-cp -r "$root_dir"/packages/build "$solution_dir"/build
 if [ "$local" = "true" ]; then
   sed "s|{ name = \"exercism_test_runner\", version = \"\([0-9.]*\)\", build_tools = \[\"gleam\"\], requirements = \[\(.*\)\].*}|{ name = \"exercism_test_runner\", version = \"\1\", build_tools = [\"gleam\"], requirements = [\2], source = \"local\", path = \"${root_dir}/runner\" }|;
     s|exercism_test_runner = .*|exercism_test_runner = { path = \"${root_dir}/runner\" }|" \
@@ -98,17 +97,40 @@ echo "${slug}: compiling and testing..."
 
 cd "${solution_dir}" || exit 1
 
-# Remove the precompiled Erlang files to ensure that they do not get copied and
-# compiled into .BEAM files by the Gleam build tool.
-rm build/packages/*/src/*.erl
-
-# `gleam test` builds the project if it needs to before it runs the tests, so a
-# separate `gleam build` step isn't needed. Running one command saves starting
-# the Gleam build tool a second time and its check that the build is up to date.
-# The tests write the results file. If compilation fails, no results file is
-# written and the output holds the compiler error instead.
 rm -f "${results_file}"
-output=$(gleam test -- --json-output-path="$results_file" 2>&1) || true
+
+if [ "$local" = "true" ]; then
+  # The local test runner package is not precompiled in the image, so the Gleam
+  # build tool compiles it and runs the tests.
+  cp -r "$root_dir"/packages/build "$solution_dir"/build
+  # Remove the precompiled Erlang files to ensure that they do not get copied
+  # and compiled into .BEAM files by the Gleam build tool.
+  rm build/packages/*/src/*.erl
+  output=$(gleam test -- --json-output-path="$results_file" 2>&1) || true
+else
+  # The dependencies were compiled when the image was built, so only the
+  # solution's package needs compiling. `gleam compile-package` turns it into
+  # Erlang source in about 30ms, without starting an Erlang VM. A single VM then
+  # compiles that source in memory and runs the tests. `gleam test` started one
+  # VM to compile the Erlang and a second to run the tests.
+  # `-mode minimal` loads only the modules the VM needs to boot, and the rest
+  # load when they are first called.
+  package_dir="${solution_dir}/build/dev/erlang/${underscore_slug}"
+  if output=$(gleam compile-package --target erlang --no-beam \
+      --package "${solution_dir}" --out "${package_dir}" \
+      --lib "${root_dir}/packages/build/dev/erlang" 2>&1); then
+    output=$(erl -noshell -mode minimal -pa "${root_dir}/ebin" -eval "
+      Load = fun(File) ->
+        case compile:file(File, [binary, report_errors, report_warnings, debug_info]) of
+          {ok, Module, Beam} -> {module, Module} = code:load_binary(Module, File, Beam);
+          error -> halt(1)
+        end
+      end,
+      lists:foreach(Load, filelib:wildcard(\"${package_dir}/_gleam_artefacts/*.erl\")),
+      'packages@@main':run(${underscore_slug}_test)" \
+      -extra --json-output-path="$results_file" 2>&1) || true
+  fi
+fi
 echo "${output}"
 
 if [ ! -f "${results_file}" ]; then
